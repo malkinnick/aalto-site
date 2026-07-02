@@ -7,6 +7,9 @@
     var host = document.getElementById('aalto-mount');
     if (!host) return;
     host.innerHTML = HTML;
+    // Tilda's reveal targets #allrecords only; un-hide our renamed wrapper
+    var root = document.getElementById('aalto-code-root');
+    if (root) root.style.opacity = '1';
     // innerHTML does not execute <script> tags - re-create them in order
     var scripts = host.querySelectorAll('script');
     for (var i = 0; i < scripts.length; i++) {
