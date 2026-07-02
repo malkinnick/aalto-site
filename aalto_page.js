@@ -127,12 +127,22 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     var root = document.getElementById('aalto-code-root');
     if (root) root.style.opacity = '1';
     // innerHTML does not execute <script> tags - re-create them in order
+    var realAdd = document.addEventListener.bind(document);
+    var pendingDCL = [];
+    document.addEventListener = function (type, fn, opts) {
+      if (type === 'DOMContentLoaded') { pendingDCL.push(fn); return; }
+      return realAdd(type, fn, opts);
+    };
     var scripts = host.querySelectorAll('script');
     for (var i = 0; i < scripts.length; i++) {
       var s = scripts[i], n = document.createElement('script');
       if (s.src) { n.src = s.src; } else { n.text = s.text; }
       if (s.type) n.type = s.type;
       s.parentNode.replaceChild(n, s);
+    }
+    document.addEventListener = realAdd;
+    for (var p = 0; p < pendingDCL.length; p++) {
+      try { pendingDCL[p].call(document, new Event('DOMContentLoaded')); } catch (e) {}
     }
   }
   if (document.readyState === 'loading') {
@@ -839,4 +849,107 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
 
   // small public API for debugging
   window.AaltoI18n = { setLang: setLang, getLang: function () { return current; } };
+})();
+
+/* ------------------------------------------------------------------ */
+/* Layout normalizer v2 (deterministic, baked element ids)            */
+/* - even gaps between header menu items (any language)               */
+/* - even gaps between the six cards                                  */
+/* - card subtitles at equal distance under their titles              */
+/* - language switcher pinned next to the header button, always       */
+/*   fully visible                                                    */
+/* ------------------------------------------------------------------ */
+(function () {
+  'use strict';
+  var MENU_IDS = ['1741773916824','1741773916815','1741773916794','1741773916806','1741773916845','1741773916834'];
+  var MENU_GAP = 34, CARD_GAP = 20, SUB_GAP = 16;
+  // cards: bg = position anchor; members shift together horizontally
+  var CARDS = [
+    { bg:'1742976412158', title:'1742976412152', sub:'1742976412148', members:['1742976412158','1742976412152','1742976412148','1742976412156','1743620838590'] },
+    { bg:'1742976412203', title:'1742976412184', sub:'1742976412188', members:['1742976412203','1742976412184','1742976412188','1742976412200'] },
+    { bg:'1742976412138', title:'176061955356893660', sub:'1742976412134', members:['1742976412138','176061955356893660','1742976412134','1742976412132','1743620281558'] },
+    { bg:'1742976412181', title:'1742976412168', sub:'1742976412178', members:['1742976412181','1742976412168','1742976412178','1742976412174','1742976412172','1743620715575'] },
+    { bg:'1742976412212', title:'1742976412099', sub:'1742976412105', members:['1742976412212','1742976412099','1742976412105','1742976412095','1742976412103','1743620352270'] },
+    { bg:'1742976412208', title:'1742976412114', sub:'1742976412109', members:['1742976412208','1742976412114','1742976412109','1742976412119','1742976412112','1743621028349'] }
+  ];
+
+  function q(id) { return document.querySelector('[data-elem-id="' + id + '"]'); }
+  function zoomOf(el) { var z = parseFloat(el.style.zoom || getComputedStyle(el).zoom); return (z && isFinite(z)) ? z : 1; }
+  function sl(el) { return parseFloat(el.style.left) || 0; }
+  function st(el) { return parseFloat(el.style.top) || 0; }
+  function visible(el) { if (!el) return false; var r = el.getBoundingClientRect(); return r.width > 0 && getComputedStyle(el).display !== 'none'; }
+
+  function normalizeMenu() {
+    if (window.innerWidth < 960) return;
+    var els = MENU_IDS.map(q).filter(visible);
+    if (els.length < 3) return;
+    els.sort(function (a, b) { return sl(a) - sl(b); });
+    for (var i = 1; i < els.length; i++) {
+      var prev = els[i - 1];
+      var prevW = prev.getBoundingClientRect().width / zoomOf(prev);
+      els[i].style.left = Math.round(sl(prev) + prevW + MENU_GAP) + 'px';
+    }
+  }
+
+  function normalizeCards() {
+    if (window.innerWidth < 960) return;
+    var cards = CARDS.map(function (c) {
+      return { bg: q(c.bg), title: q(c.title), sub: q(c.sub), members: c.members.map(q).filter(Boolean) };
+    }).filter(function (c) { return visible(c.bg); });
+    if (cards.length < 3) return;
+    // even horizontal gaps (first card keeps its place)
+    for (var i = 1; i < cards.length; i++) {
+      var prev = cards[i - 1];
+      var prevRight = sl(prev.bg) + prev.bg.getBoundingClientRect().width / zoomOf(prev.bg);
+      var delta = Math.round(prevRight + CARD_GAP - sl(cards[i].bg));
+      if (delta) {
+        cards[i].members.forEach(function (e) { e.style.left = Math.round(sl(e) + delta) + 'px'; });
+      }
+    }
+    // subtitles: equal distance under the title (survives 2-line titles too)
+    cards.forEach(function (c) {
+      if (!visible(c.title) || !c.sub) return;
+      var tH = c.title.getBoundingClientRect().height / zoomOf(c.title);
+      c.sub.style.top = Math.round(st(c.title) + tH + SUB_GAP) + 'px';
+    });
+  }
+
+  function normalizeSwitcher() {
+    var sw = document.querySelector('.aalto-lang-switcher');
+    if (!sw) return;
+    var btn = [].slice.call(document.querySelectorAll('.tn-atom__button-text')).filter(function (e) {
+      var r = e.getBoundingClientRect(); return r.top < 90 && r.width > 0;
+    })[0];
+    if (!btn) return;
+    var br = (btn.closest('[data-elem-id]') || btn).getBoundingClientRect();
+    var w = sw.getBoundingClientRect().width || 90;
+    var left = Math.round(br.right + 20);
+    var maxLeft = window.innerWidth - w - 24;
+    if (left > maxLeft) left = maxLeft;
+    sw.style.right = 'auto';
+    sw.style.left = left + 'px';
+    sw.style.top = Math.round(br.top + br.height / 2 - (sw.getBoundingClientRect().height || 16) / 2) + 'px';
+    sw.style.visibility = 'visible';
+  }
+
+  var t;
+  function runAll() {
+    try { normalizeMenu(); } catch (e) {}
+    try { normalizeCards(); } catch (e) {}
+    try { normalizeSwitcher(); } catch (e) {}
+  }
+  function schedule(ms) { clearTimeout(t); t = setTimeout(runAll, ms); }
+
+  window.addEventListener('resize', function () { schedule(300); });
+  document.addEventListener('click', function (ev) {
+    if (ev.target.closest && ev.target.closest('.aalto-lang-link')) schedule(80);
+  }, true);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { schedule(500); });
+  } else {
+    schedule(500);
+  }
+  window.addEventListener('load', function () { schedule(700); });
+  setTimeout(runAll, 1800);
+  window.__aaltoNormalize = runAll;
 })();
