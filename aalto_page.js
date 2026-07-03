@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v15-links-forms-hubspot';
+window.__aaltoVer = 'v16-switcher-corner';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -646,7 +646,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
       ticking = true;
       requestAnimationFrame(function () {
         ticking = false;
-        swContainer.style.top = Math.round(swTopDoc - (window.pageYOffset || 0)) + 'px';
+        /* fixed corner pill: no scroll repositioning */
       });
     }, { passive: true });
     // Tilda repositions zero-blocks asynchronously
@@ -664,6 +664,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   var swTopDoc = 0; // anchor top in document coords (for vertical scroll tracking)
 
   function placeSwitcher() {
+    return; // decoupled: switcher is a CSS-positioned fixed corner pill
     if (!swContainer || !swAnchorEls) return;
     if (swContainer.dataset && swContainer.dataset.norm === '1') return;
     var enEl = swAnchorEls[0], fiEl = swAnchorEls[1];
@@ -758,12 +759,15 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     cssInjected = true;
     var st = document.createElement('style');
     st.textContent =
-      '.aalto-lang-switcher{position:fixed;z-index:950;white-space:nowrap;display:flex;gap:6px;align-items:center;line-height:1;}' +
-      '.aalto-lang-switcher--fixed{position:fixed;top:20px;right:20px;z-index:99990;background:rgba(0,0,0,.45);padding:8px 12px;border-radius:20px;color:#fff;font:14px/1 sans-serif;}' +
-      '.aalto-lang-link{color:inherit;text-decoration:none;opacity:.65;cursor:pointer;}' +
+      /* self-contained fixed corner pill — no artboard coupling, no JS positioning */
+      '.aalto-lang-switcher,.aalto-lang-switcher--fixed{position:fixed!important;top:16px!important;right:16px!important;left:auto!important;bottom:auto!important;transform:none!important;z-index:9600;white-space:nowrap;display:flex;gap:8px;align-items:center;line-height:1;background:rgba(10,20,28,.46);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);padding:7px 13px;border-radius:999px;font:600 14px/1 \'Helvetica\',Arial,sans-serif;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.20);visibility:visible!important;}' +
+      '.aalto-lang-link{color:#fff;text-decoration:none;opacity:.7;cursor:pointer;padding:2px 1px;}' +
       '.aalto-lang-link:hover{opacity:1;}' +
-      '.aalto-lang-link.is-active{opacity:1;font-weight:700;text-decoration:underline;text-underline-offset:3px;}' +
-      '.aalto-lang-sep{opacity:.5;}';
+      '.aalto-lang-link.is-active{opacity:1;font-weight:800;text-decoration:underline;text-underline-offset:3px;}' +
+      '.aalto-lang-sep{opacity:.45;}' +
+      /* mobile: burger sits top-right — keep the pill clear to its left */
+      '@media(max-width:959px){.aalto-lang-switcher,.aalto-lang-switcher--fixed{top:14px!important;right:74px!important;padding:6px 11px;font-size:13px;}}' +
+      '@media(max-width:480px){.aalto-lang-switcher,.aalto-lang-switcher--fixed{top:12px!important;right:66px!important;}}';
     document.head.appendChild(st);
   }
 
@@ -917,6 +921,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   }
 
   function normalizeSwitcher() {
+    return; // decoupled: fixed corner pill needs no artboard normalization
     var sw = document.querySelector('.aalto-lang-switcher');
     if (!sw) return;
     var btnText = [].slice.call(document.querySelectorAll('.tn-atom__button-text')).filter(function (e) {
