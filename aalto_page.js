@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v13-raf-pin';
+window.__aaltoVer = 'v15-links-forms-hubspot';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -1312,3 +1312,247 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   setTimeout(boot, 3500);
   window.__aaltoPin = boot;
 })();
+
+/* ============================================================
+ * Aalto — mailto:/tel: linkifier for Contacts/About popup
+ * i18n-safe: wraps existing tokens in an <a> PARENT (never splits
+ * translated text nodes), idempotent, re-runs on lang switch + popup open.
+ * Canonical email = info@aaltojuomat.com (confirmed by Nikita 2026-07-03).
+ * ============================================================ */
+(function () {
+  var EMAIL_CANON = 'info@aaltojuomat.com';
+  var PHONE_TEL   = 'tel:+358442398270';
+  var INVOICE     = 'invoice-09805665@kollektor.fi';
+  var ATOM_CONTACT = '1741793181441'; // Email/Phone + visits line
+
+  function q(id) { return document.querySelector('[data-elem-id="' + id + '"]'); }
+  function wrapped(node) {
+    var p = node.parentNode;
+    return !!(p && p.getAttribute && (p.getAttribute('data-aalto-link') || p.getAttribute('data-aalto-tel')));
+  }
+  function mkAnchor(href, tel) {
+    var a = document.createElement('a');
+    a.href = href;
+    a.setAttribute(tel ? 'data-aalto-tel' : 'data-aalto-link', '1');
+    a.style.color = 'inherit';
+    a.style.textDecoration = 'underline';
+    return a;
+  }
+  // Wrap a whole (already isolated) text node in an <a> parent, in place.
+  function wrapNode(node, href, tel) {
+    if (wrapped(node)) return;
+    var a = mkAnchor(href, tel);
+    node.parentNode.insertBefore(a, node);
+    a.appendChild(node);
+  }
+
+  // Emails live inside <u>…</u>. Canonicalize to .com (except kollektor invoice),
+  // then wrap the <u> in a mailto anchor. <u> text node stays intact (i18n-safe).
+  function linkEmails(root) {
+    if (!root || !root.querySelectorAll) return;
+    var us = root.querySelectorAll('u');
+    for (var i = 0; i < us.length; i++) {
+      var u = us[i], txt = (u.textContent || '').trim();
+      if (txt.indexOf('@') === -1) continue;
+      if (u.parentNode && u.parentNode.getAttribute && u.parentNode.getAttribute('data-aalto-link')) continue;
+      var isInvoice = /kollektor\.fi/i.test(txt);
+      var email = isInvoice ? txt : EMAIL_CANON;
+      if (!isInvoice && u.textContent !== email) u.textContent = email; // canonicalize display
+      var a = mkAnchor('mailto:' + email, false);
+      u.parentNode.insertBefore(a, u);
+      a.appendChild(u);
+    }
+  }
+
+  // Invoice address is a bare text node (after <br>) — wrap in place if standalone,
+  // otherwise split it out first, then wrap.
+  function linkInvoice(root) {
+    if (!root) return;
+    var tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+    var n, hits = [];
+    while ((n = tw.nextNode())) {
+      if (n.nodeValue && n.nodeValue.indexOf(INVOICE) > -1 && !wrapped(n)) hits.push(n);
+    }
+    hits.forEach(function (node) {
+      var v = node.nodeValue, idx = v.indexOf(INVOICE);
+      var target = node;
+      if (v.trim() !== INVOICE) {                    // not isolated -> split out
+        var mid = node.splitText(idx);
+        mid.splitText(INVOICE.length);
+        target = mid;
+      }
+      wrapNode(target, 'mailto:' + INVOICE, false);
+    });
+  }
+
+  // Phone: the "Phone: +358 442 398 270" text node is i18n-managed. Wrap the
+  // WHOLE node in a tel anchor (node object preserved) so i18n keeps translating
+  // the label while the line becomes tappable. No split -> no i18n breakage.
+  function linkPhone(root) {
+    if (!root) return;
+    var tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+    var n;
+    while ((n = tw.nextNode())) {
+      if (n.nodeValue && /\+358\s*442\s*398\s*270/.test(n.nodeValue) && !wrapped(n)) {
+        wrapNode(n, PHONE_TEL, true);
+        return;
+      }
+    }
+  }
+
+  function run() {
+    var atom = q(ATOM_CONTACT);
+    if (atom) { linkEmails(atom); linkPhone(atom); }
+    var mount = document.getElementById('aalto-mount') || document;
+    linkEmails(mount);
+    linkInvoice(mount);
+  }
+
+  function schedule() { [400, 1200, 2600].forEach(function (d) { setTimeout(run, d); }); }
+
+  // Re-run after every language switch (i18n may re-render popups).
+  function hook() {
+    var I = window.AaltoI18n;
+    if (I && I.setLang && !I.__aaltoLinkHook) {
+      var orig = I.setLang;
+      I.setLang = function () { var r = orig.apply(this, arguments); setTimeout(run, 0); return r; };
+      I.__aaltoLinkHook = 1;
+    }
+  }
+
+  // Popups render lazily on hash-link click — re-run after they mount.
+  document.addEventListener('click', function (ev) {
+    var a = ev.target.closest && ev.target.closest('a[href^="#"]');
+    if (a) { [350, 850].forEach(function (d) { setTimeout(run, d); }); }
+  }, true);
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { hook(); schedule(); });
+  } else { hook(); schedule(); }
+  window.addEventListener('load', function () { hook(); schedule(); });
+  window.__aaltoLinkify = run;
+})();
+
+/* ============================================================
+ * Aalto — route landing-page forms to HubSpot (portal 148665322)
+ * Intercepts Tilda form submit (capture), POSTs to HubSpot Forms API,
+ * i18n success/error, mailto fallback, honeypot + time-trap.
+ * Forms confirmed on live page 2026-07-03:
+ *   form921022402 (Contact: Email,Name,Phone), form912651493 (Contact: Name,email),
+ *   form912628486 (Supplier: Name,email,Textarea,Checkbox)
+ * ============================================================ */
+(function () {
+  var PORTAL = '148665322';
+  var ENDPOINT = 'https://api.hsforms.com/submissions/v3/integration/submit/';
+  var FALLBACK_EMAIL = 'info@aaltojuomat.com';
+  var CONTACT_GUID  = 'cf324891-9bf4-4e2f-8321-456e77309d6a';
+  var SUPPLIER_GUID = '9d17ce9b-7805-4dfc-baa3-d6acc9ecc4b4';
+
+  // form id -> { guid, map: {tildaInputName: hubspotInternalField} }
+  var CONFIG = {
+    form921022402: { guid: CONTACT_GUID,  map: { Email: 'email', Name: 'firstname', Phone: 'phone' } },
+    form912651493: { guid: CONTACT_GUID,  map: { email: 'email', Name: 'firstname' } },
+    form912628486: { guid: SUPPLIER_GUID, map: { email: 'email', Name: 'firstname', Textarea: 'message' } }
+  };
+
+  var T = {
+    ok_t:  { en: 'Thank you!', fi: 'Kiitos!', sv: 'Tack!' },
+    ok_p:  { en: "We've received your message and will be in touch soon.",
+             fi: 'Viestisi on vastaanotettu — olemme sinuun pian yhteydessä.',
+             sv: 'Vi har tagit emot ditt meddelande och hör av oss snart.' },
+    err_p: { en: "Something went wrong sending the form. Please email us at ",
+             fi: 'Lomakkeen lähetys epäonnistui. Ole hyvä ja lähetä sähköpostia osoitteeseen ',
+             sv: 'Något gick fel. Vänligen mejla oss på ' }
+  };
+  function lang() { try { return (window.AaltoI18n && window.AaltoI18n.getLang()) || 'en'; } catch (e) { return 'en'; } }
+  function tr(k) { var L = lang(); return (T[k] && (T[k][L] || T[k].en)) || ''; }
+
+  function readCookie(n) {
+    var m = document.cookie.match('(?:^|; )' + n + '=([^;]*)'); return m ? decodeURIComponent(m[1]) : null;
+  }
+  function val(form, name) {
+    var el = form.querySelector('[name="' + name + '"]');
+    return el ? String(el.value || '').trim() : '';
+  }
+
+  // Add a honeypot input + record show-time the first time we see a managed form.
+  function arm(form) {
+    if (form.__aaltoArmed) return;
+    form.__aaltoArmed = 1;
+    form.__aaltoShown = Date.now();
+    var hp = document.createElement('input');
+    hp.type = 'text'; hp.name = 'aalto_hp_field'; hp.tabIndex = -1; hp.autocomplete = 'off';
+    hp.setAttribute('aria-hidden', 'true');
+    hp.style.cssText = 'position:absolute!important;left:-9999px!important;width:1px;height:1px;opacity:0;';
+    form.appendChild(hp);
+  }
+  function armAll() { for (var id in CONFIG) { var f = document.getElementById(id); if (f) arm(f); } }
+
+  function showResult(form, okHtml) {
+    var box = form.querySelector('.js-successbox') || form;
+    // hide inputs, show message
+    var inputs = form.querySelector('.t-form__inputsbox');
+    if (inputs) inputs.style.display = 'none';
+    var btn = form.querySelector('.t-form__submit'); if (btn) btn.style.display = 'none';
+    var msg = document.createElement('div');
+    msg.setAttribute('role', 'status');
+    msg.style.cssText = 'padding:14px 4px;font-size:15px;line-height:1.5;';
+    msg.innerHTML = okHtml;
+    (inputs && inputs.parentNode ? inputs.parentNode : form).appendChild(msg);
+  }
+  function ok(form) {
+    showResult(form, '<strong>' + tr('ok_t') + '</strong><br>' + tr('ok_p'));
+  }
+  function fail(form) {
+    var mail = 'mailto:' + FALLBACK_EMAIL;
+    showResult(form, tr('err_p') + '<a href="' + mail + '" style="text-decoration:underline">' + FALLBACK_EMAIL + '</a>.');
+  }
+
+  function post(cfg, form) {
+    var fields = [];
+    for (var k in cfg.map) {
+      var v = val(form, k);
+      if (v) fields.push({ name: cfg.map[k], value: v });
+    }
+    var payload = {
+      fields: fields,
+      context: { pageUri: location.href, pageName: document.title },
+      legalConsentOptions: { consent: { consentToProcess: true,
+        text: 'I agree to allow Aalto Juomat to store and process my personal data.' } }
+    };
+    var hutk = readCookie('hubspotutk'); if (hutk) payload.context.hutk = hutk;
+    return fetch(ENDPOINT + PORTAL + '/' + cfg.guid, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+    }).then(function (r) { if (!r.ok) throw new Error('HS ' + r.status); return r; });
+  }
+
+  // Capture-phase submit interception: run before Tilda's own handler.
+  document.addEventListener('submit', function (ev) {
+    var form = ev.target;
+    if (!form || !form.id || !CONFIG[form.id]) return;
+    ev.preventDefault();
+    ev.stopImmediatePropagation();
+    var cfg = CONFIG[form.id];
+    // anti-spam: honeypot filled, or submitted implausibly fast
+    if (val(form, 'aalto_hp_field')) return;
+    var shown = form.__aaltoShown || 0;
+    if (shown && (Date.now() - shown) < 2500) { /* too fast — likely bot; drop silently */ return; }
+    // basic required check
+    if (!val(form, 'email') && !val(form, 'Email')) { return; }
+    var btn = form.querySelector('.t-form__submit .t-submit, .t-form__submit');
+    if (btn) { btn.setAttribute('disabled', 'disabled'); }
+    post(cfg, form).then(function () { ok(form); }).catch(function () { fail(form); });
+  }, true);
+
+  // Arm forms once they exist / when popups open.
+  function schedule() { [600, 1600, 3000].forEach(function (d) { setTimeout(armAll, d); }); }
+  document.addEventListener('click', function (ev) {
+    var a = ev.target.closest && ev.target.closest('a[href^="#"]');
+    if (a) { [350, 900].forEach(function (d) { setTimeout(armAll, d); }); }
+  }, true);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedule);
+  else schedule();
+  window.addEventListener('load', schedule);
+  window.__aaltoForms = { config: CONFIG, arm: armAll };
+})();
+
