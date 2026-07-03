@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v25-cards-antifouc';
+window.__aaltoVer = 'v26-b2b-mobile-stack';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -1692,5 +1692,77 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedule); else schedule();
   window.addEventListener('load', schedule);
   window.__aaltoFooter = fix;
+})();
+
+/* ============================================================
+ * Aalto — mobile re-stack of the B2B popup (rec912602860).
+ * Desktop: 5 feature rows as two columns (label left, description
+ * right). On phones the columns overlap. Stack each description
+ * UNDER its label (single column) and cascade rows down; grow the
+ * artboard. ALL selectors scoped to #rec912602860 so the shared
+ * data-elem-ids in Contacts/Products popups are never touched.
+ * ============================================================ */
+(function () {
+  var REC = 'rec912602860';
+  // [labelId, descId] top-to-bottom (feature rows + bottom CTA row)
+  var ROWS = [
+    ['1742927808630', '1742927808643'],
+    ['1742927840215', '1742927840235'],
+    ['1742927841478', '1742927841506'],
+    ['1742927842515', '1742927842531'],
+    ['1741793181311', '1741793181441']
+  ];
+  var BTN = '1741793181469', CAP = '1741793181484';
+  function root() { return document.getElementById(REC); }
+  function q(id) { var r = root(); return r ? r.querySelector('[data-elem-id="' + id + '"]') : null; }
+  function zoomOf(el) { var z = parseFloat(el.style.zoom || getComputedStyle(el).zoom); return (z && isFinite(z)) ? z : 1; }
+  function st(el) { return parseFloat(el.style.top) || 0; }
+  function sl(el) { return parseFloat(el.style.left) || 0; }
+  function h(el) { return el.getBoundingClientRect().height / zoomOf(el); }
+
+  function restack() {
+    if (window.innerWidth >= 640) return;                 // phones only
+    var first = q(ROWS[0][0]); if (!first) return;
+    if (first.getBoundingClientRect().height < 3) return;  // popup not rendered
+    // single-column guard: on desktop the desc sits far right (>800); if already
+    // stacked (desc left ~ label left) we still recompute idempotently.
+    var ab = first.closest('.t396__artboard'); if (!ab) return;
+    var z = zoomOf(first);
+    var abW = ab.getBoundingClientRect().width / z;
+    var leftMargin = sl(first);                            // align to the label column
+    var colW = Math.max(180, Math.round(abW - leftMargin - 40));
+    var y = st(first);                                     // start at the first label's top
+    ROWS.forEach(function (pair) {
+      var lab = q(pair[0]), desc = q(pair[1]); if (!lab) return;
+      lab.style.top = Math.round(y) + 'px';
+      lab.style.left = Math.round(leftMargin) + 'px';
+      y += h(lab) + 4;
+      if (desc) {
+        desc.style.left = Math.round(leftMargin) + 'px';
+        desc.style.width = colW + 'px';
+        desc.style.top = Math.round(y) + 'px';
+        y += h(desc) + 20;
+      } else { y += 16; }
+    });
+    // push the bottom CTA row below the stacked rows
+    var btn = q(BTN), cap = q(CAP);
+    if (btn) { var d = Math.round(y + 8 - st(btn)); if (d > 0) { btn.style.top = Math.round(st(btn) + d) + 'px'; if (cap) cap.style.top = Math.round(st(cap) + d) + 'px'; } y = Math.max(y, st(btn) + h(btn)); }
+    if (cap) y = Math.max(y, st(cap) + h(cap));
+    // grow the scroll area
+    var outH = Math.round((y + 60) * z);
+    ab.style.height = outH + 'px'; ab.style.maxHeight = 'none';
+    var t396 = ab.closest('.t396'); if (t396) t396.style.height = outH + 'px';
+    var r = ab.closest('.r'); if (r) r.style.height = outH + 'px';
+    var pop = ab.closest('.t-popup'); if (pop) { pop.style.overflowY = 'auto'; pop.style.webkitOverflowScrolling = 'touch'; }
+  }
+
+  document.addEventListener('click', function (ev) {
+    var a = ev.target.closest && ev.target.closest('a[href="#Restaurants"],[data-tooltip-hook="#Restaurants"],a[href="#B2B"],[data-tooltip-hook="#B2B"]');
+    if (a) [350, 900, 1700].forEach(function (d) { setTimeout(restack, d); });
+  }, true);
+  window.addEventListener('resize', function () { setTimeout(restack, 200); });
+  var I = window.AaltoI18n;
+  if (I && I.setLang && !I.__b2bHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); setTimeout(restack, 80); return r; }; I.__b2bHook = 1; }
+  window.__aaltoB2B = restack;
 })();
 
