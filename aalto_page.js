@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v24-suppliers-robust';
+window.__aaltoVer = 'v25-cards-antifouc';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -1036,6 +1036,15 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     schedule(500);
   }
   window.addEventListener('load', function () { schedule(700); });
+  // anti-FOUC: run once fonts settle (title heights become final) + a couple of early runs
+  // near the anti-flicker reveal (1200ms), and whenever the language is (re)applied.
+  [900, 1300].forEach(function (d) { setTimeout(runAll, d); });
+  if (document.fonts && document.fonts.ready && document.fonts.ready.then) document.fonts.ready.then(function () { runAll(); });
+  (function hookLang() {
+    var I = window.AaltoI18n;
+    if (I && I.setLang && !I.__normHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); setTimeout(runAll, 60); return r; }; I.__normHook = 1; }
+    else if (!(I && I.setLang)) setTimeout(hookLang, 200);
+  })();
   setTimeout(runAll, 1800);
   setTimeout(runAll, 4000);
   window.__aaltoNormalize = runAll;
