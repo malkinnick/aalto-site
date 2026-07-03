@@ -919,13 +919,14 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     var sw = document.querySelector('.aalto-lang-switcher');
     if (!sw) return;
     var btnText = [].slice.call(document.querySelectorAll('.tn-atom__button-text')).filter(function (e) {
-      var r = e.getBoundingClientRect(); return r.width > 0;
+      var r = e.getBoundingClientRect(); return r.width > 0 && r.top < 150;
     })[0];
     var btnElem = btnText && btnText.closest('.t396__elem');
     var artboard = btnElem && btnElem.closest('.t396__artboard');
     if (!btnElem || !artboard) {
-      // mobile: button hidden — hand control back to the engine's fixed placement
-      if (sw.dataset.norm === '1') {
+      // release to the engine's fixed placement ONLY on real mobile (burger
+      // layout); on desktop the button may simply not be laid out yet — retry later
+      if (window.innerWidth < 960 && sw.dataset.norm === '1') {
         sw.dataset.norm = '';
         sw.style.position = '';
         if (sw.parentElement !== document.body) document.body.appendChild(sw);
@@ -1009,6 +1010,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   }
   window.addEventListener('load', function () { schedule(700); });
   setTimeout(runAll, 1800);
+  setTimeout(runAll, 4000);
   window.__aaltoNormalize = runAll;
 })();
 
@@ -1043,4 +1045,165 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     setTimeout(apply, 800);
   }
   window.addEventListener('load', function () { setTimeout(apply, 500); });
+})();
+
+/* ------------------------------------------------------------------ */
+/* UX pack (audit T1-T4, approved 2026-07-03)                          */
+/* T1 contrast: small light text -> #FFF 14px (4.2:1, max on brand     */
+/*    blue); small brand-blue text on light cards -> #005E8D (5.0:1).  */
+/* T2 whole cards clickable. T3 carousel arrows. T4 dialog semantics.  */
+/* ------------------------------------------------------------------ */
+(function () {
+  'use strict';
+  function q(id) { return document.querySelector('[data-elem-id="' + id + '"]'); }
+
+  /* ---------------- T1: contrast ---------------- */
+  var LIGHTS = { 'rgb(245, 245, 245)': 1, 'rgb(196, 222, 234)': 1, 'rgb(242, 251, 255)': 1 };
+  function fixContrast() {
+    var m = document.getElementById('aalto-mount');
+    if (!m) return;
+    var atoms = m.querySelectorAll('.tn-atom');
+    for (var i = 0; i < atoms.length; i++) {
+      var a = atoms[i];
+      if (a.getAttribute('data-cfix') === '1') continue;
+      if (!a.textContent.trim()) continue;
+      var cs = getComputedStyle(a);
+      var fs = parseFloat(cs.fontSize);
+      if (!fs || fs > 13.5) continue;
+      var c = cs.color;
+      if (LIGHTS[c]) {
+        a.style.color = '#FFFFFF';
+      } else if (c === 'rgb(0, 131, 191)') {
+        a.style.color = '#005E8D';
+      } else {
+        continue;
+      }
+      var lh = cs.lineHeight;
+      if (lh && lh.slice(-2) === 'px') a.style.lineHeight = Math.round(parseFloat(lh) * 14 / fs) + 'px';
+      a.style.fontSize = '14px';
+      a.setAttribute('data-cfix', '1');
+    }
+  }
+
+  /* ---------------- T2: clickable cards ---------------- */
+  var CARD_ACT = [
+    { bg: '1742976412158', btn: '1742976412156', texts: ['1742976412152','1742976412148'] },
+    { bg: '1742976412203', btn: '1742976412200', texts: ['1742976412184','1742976412188'] },
+    { bg: '1742976412138', btn: '1742976412132', texts: ['176061955356893660','1742976412134'] },
+    { bg: '1742976412181', btn: '1742976412172', texts: ['1742976412168','1742976412178','1742976412174'] },
+    { bg: '1742976412212', btn: '1742976412103', texts: ['1742976412099','1742976412105','1742976412095'] },
+    { bg: '1742976412208', btn: '1742976412112', texts: ['1742976412114','1742976412109','1742976412119'] }
+  ];
+  function wireCards() {
+    CARD_ACT.forEach(function (c) {
+      [c.bg].concat(c.texts).forEach(function (id) {
+        var el = q(id);
+        if (!el || el.getAttribute('data-cardwired') === '1') return;
+        el.setAttribute('data-cardwired', '1');
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', function (ev) {
+          if (ev.target.closest && ev.target.closest('a')) return; // real links keep working
+          var btn = q(c.btn);
+          var a = btn && (btn.querySelector('a') || btn);
+          if (a && a.click) a.click();
+        });
+      });
+    });
+  }
+
+  /* ---------------- T3: carousel arrows ---------------- */
+  var arrL = null, arrR = null;
+  function mkArrow(dir) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'aalto-car-arrow';
+    b.setAttribute('aria-label', dir < 0 ? 'Previous cards' : 'Next cards');
+    b.textContent = dir < 0 ? '‹' : '›';
+    b.style.cssText = 'position:fixed;z-index:900;width:44px;height:44px;border:1px solid rgba(255,255,255,.65);' +
+      'background:#0083BF;color:#fff;font-size:26px;line-height:42px;text-align:center;cursor:pointer;' +
+      'border-radius:4px;padding:0;display:none;';
+    b.addEventListener('click', function () {
+      var ab = document.querySelector('#rec913130404 .t396__artboard');
+      if (ab) ab.scrollBy({ left: dir * 368, behavior: 'smooth' });
+    });
+    document.body.appendChild(b);
+    return b;
+  }
+  function placeArrows() {
+    var ab = document.querySelector('#rec913130404 .t396__artboard');
+    if (!ab) return;
+    if (!arrL) { arrL = mkArrow(-1); arrR = mkArrow(1); ab.addEventListener('scroll', updateArrows, { passive: true }); }
+    updateArrows();
+  }
+  function updateArrows() {
+    var ab = document.querySelector('#rec913130404 .t396__artboard');
+    if (!ab || !arrL) return;
+    var usable = window.innerWidth >= 960 && ab.scrollWidth > ab.clientWidth + 10;
+    if (!usable) { arrL.style.display = arrR.style.display = 'none'; return; }
+    var bg = q('1742976412158');
+    var y = bg ? bg.getBoundingClientRect().top + bg.getBoundingClientRect().height / 2 - 22 : window.innerHeight * 0.65;
+    arrL.style.top = arrR.style.top = Math.round(y) + 'px';
+    arrL.style.left = '12px';
+    arrR.style.right = '12px'; arrR.style.left = 'auto';
+    var atStart = ab.scrollLeft <= 4;
+    var atEnd = ab.scrollLeft + ab.clientWidth >= ab.scrollWidth - 4;
+    arrL.style.display = atStart ? 'none' : 'block';
+    arrR.style.display = atEnd ? 'none' : 'block';
+  }
+
+  /* ---------------- T4: dialog semantics ---------------- */
+  function decorateOpenPopup() {
+    var pop = null;
+    var pops = document.querySelectorAll('.t-popup');
+    for (var i = 0; i < pops.length; i++) {
+      if (pops[i].getBoundingClientRect().height > 100) { pop = pops[i]; break; }
+    }
+    if (!pop) return;
+    pop.setAttribute('role', 'dialog');
+    pop.setAttribute('aria-modal', 'true');
+    if (!pop.getAttribute('aria-label')) {
+      var atoms = pop.querySelectorAll('.tn-atom');
+      for (var j = 0; j < atoms.length; j++) {
+        if (parseFloat(getComputedStyle(atoms[j]).fontSize) >= 24 && atoms[j].textContent.trim()) {
+          pop.setAttribute('aria-label', atoms[j].textContent.trim().slice(0, 60));
+          break;
+        }
+      }
+    }
+    var close = pop.querySelector('.t-popup__close, a[href="#close"]');
+    if (close) { close.setAttribute('tabindex', '0'); try { close.focus({ preventScroll: true }); } catch (e) {} }
+  }
+  document.addEventListener('click', function (ev) {
+    if (!ev.target.closest) return;
+    var a = ev.target.closest('a[href^="#"]');
+    if (a && a.getAttribute('href') !== '#close' && !a.classList.contains('aalto-lang-link')) {
+      setTimeout(decorateOpenPopup, 450);
+    }
+  }, true);
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key !== 'Escape') return;
+    var close = document.querySelector('.t-popup [href="#close"], .t-popup__close');
+    if (close) close.click();
+  });
+
+  /* ---------------- boot ---------------- */
+  function runUX() {
+    try { fixContrast(); } catch (e) {}
+    try { wireCards(); } catch (e) {}
+    try { placeArrows(); } catch (e) {}
+    var burger = document.querySelector('.t-menuburger');
+    if (burger && !burger.getAttribute('aria-label')) {
+      burger.setAttribute('aria-label', 'Menu');
+      burger.setAttribute('role', 'button');
+      burger.setAttribute('tabindex', '0');
+    }
+  }
+  var t;
+  function sched(ms) { clearTimeout(t); t = setTimeout(runUX, ms); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { sched(900); });
+  else sched(900);
+  window.addEventListener('load', function () { sched(700); });
+  window.addEventListener('resize', function () { sched(300); });
+  setTimeout(runUX, 2000);
+  window.__aaltoUX = runUX;
 })();
