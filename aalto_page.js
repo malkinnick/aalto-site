@@ -1305,4 +1305,8 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 1200); });
   else setTimeout(boot, 1200);
   window.addEventListener('load', function () { setTimeout(boot, 800); });
+  // unconditional retries: survive any load-order surprises
+  setTimeout(boot, 1600);
+  setTimeout(boot, 3500);
+  window.__aaltoPin = boot;
 })();
