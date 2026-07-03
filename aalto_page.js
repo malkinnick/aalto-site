@@ -195,7 +195,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
       'Edustamme johtavia brändejä, jotka valmistavat laadukkaita juomia',
     'We offer our clients a very broad and comprehensive selection of the trendy No and Low alcohol products in all segments':
       'Tarjoamme asiakkaillemme erittäin laajan ja kattavan valikoiman trendikkäitä alkoholittomia ja vähäalkoholisia tuotteita kaikissa segmenteissä',
-    'Our E-Shop': 'Verkkokauppamme',
+    'Our E-Shop': 'Verkkokauppa',
     'Visit our online store and enjoy effortless shopping for high-quality drinks':
       'Vieraile verkkokaupassamme ja osta laadukkaat juomat vaivattomasti',
     // About
@@ -926,10 +926,18 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     if (!btnElem || !artboard) {
       // release to the engine's fixed placement ONLY on real mobile (burger
       // layout); on desktop the button may simply not be laid out yet — retry later
-      if (window.innerWidth < 960 && sw.dataset.norm === '1') {
+      if (window.innerWidth < 960) {
         sw.dataset.norm = '';
-        sw.style.position = '';
         if (sw.parentElement !== document.body) document.body.appendChild(sw);
+        var burger = document.querySelector('.t-menuburger');
+        if (burger && burger.getBoundingClientRect().width > 0) {
+          var brr = burger.getBoundingClientRect();
+          sw.style.position = 'fixed';
+          sw.style.left = 'auto';
+          sw.style.right = Math.round(window.innerWidth - brr.left + 14) + 'px';
+          sw.style.top = Math.round(brr.top + brr.height / 2 - 8) + 'px';
+          sw.style.visibility = 'visible';
+        }
       }
       return;
     }
@@ -982,9 +990,22 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     PP.hide.forEach(function (id) { var e = q(id); if (e) e.style.display = 'none'; });
     var bg = q(PP.bg);
     if (bg) bg.style.height = Math.round(y + 30 - st(bg)) + 'px';
-    // let the zero-block/popup recalc its scroll area
+    // grow the scrollable area to the new content bottom
+    var ab2 = first.closest('.t396__artboard');
+    // zoom sits on the ELEMENTS (not the artboard): containers need visual px
+    var outH = Math.round((y + 56) * z);
+    if (ab2) {
+      ab2.style.height = outH + 'px';
+      ab2.style.maxHeight = 'none';
+      var t396 = ab2.closest('.t396');
+      if (t396) t396.style.height = outH + 'px';
+      var rec = ab2.closest('.r');
+      if (rec) rec.style.height = outH + 'px';
+    }
+    var wrap = first.closest('.t-popup__container');
+    if (wrap) wrap.style.height = 'auto';
     var pop = first.closest('.t-popup');
-    if (pop) pop.style.overflowY = 'auto';
+    if (pop) { pop.style.overflowY = 'auto'; pop.style.webkitOverflowScrolling = 'touch'; }
   }
 
   var t;
@@ -1206,4 +1227,82 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   window.addEventListener('resize', function () { sched(300); });
   setTimeout(runUX, 2000);
   window.__aaltoUX = runUX;
+})();
+
+/* ------------------------------------------------------------------ */
+/* Header pin + Products popup desktop spacing (Nikita 2026-07-03 #2)  */
+/* - header row (logo, menu, button, switcher) stays put while the     */
+/*   tiles are scrolled horizontally                                   */
+/* - Products popup (desktop): button/caption pushed below the longest */
+/*   first-column list instead of overlapping it (long FI strings)     */
+/* ------------------------------------------------------------------ */
+(function () {
+  'use strict';
+  function q(id) { return document.querySelector('[data-elem-id="' + id + '"]'); }
+  function zoomOf(el) { var z = parseFloat(el.style.zoom || getComputedStyle(el).zoom); return (z && isFinite(z)) ? z : 1; }
+
+  /* --- header pin --- */
+  var HEADER_IDS = ['1741773916636','1741773916872','1741773916824','1741773916815',
+                    '1741773916794','1741773916806','1741773916845','1741773916834','1741774643714'];
+  var pinned = false;
+  function pinHeader() {
+    if (pinned || window.innerWidth < 960) return;
+    var ab = document.querySelector('#rec913130404 .t396__artboard');
+    if (!ab) return;
+    pinned = true;
+    var ticking = false;
+    ab.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        ticking = false;
+        var x = ab.scrollLeft;
+        var els = HEADER_IDS.map(q).filter(Boolean);
+        var sw = document.querySelector('.aalto-lang-switcher');
+        if (sw && sw.dataset.norm === '1') els.push(sw);
+        els.forEach(function (e) {
+          var z = zoomOf(e);
+          e.style.transform = x ? 'translateX(' + Math.round(x / z) + 'px)' : '';
+        });
+      });
+    }, { passive: true });
+  }
+
+  /* --- Products popup desktop spacing --- */
+  function fixProductsPopupDesktop() {
+    if (window.innerWidth < 960) return;
+    var btn = q('1741793181469'), cap = q('1741793181484');
+    if (!btn || btn.getBoundingClientRect().height < 5) return; // popup not rendered
+    var lists = ['1769781375124000001','1769783168730000004'].map(q).filter(Boolean);
+    if (!lists.length) return;
+    var z = zoomOf(btn);
+    var listBottom = 0;
+    lists.forEach(function (l) {
+      var b = (parseFloat(l.style.top) || 0) + l.getBoundingClientRect().height / z;
+      if (b > listBottom) listBottom = b;
+    });
+    var btnTop = parseFloat(btn.style.top) || 0;
+    var need = listBottom + 28;
+    if (btnTop < need) {
+      var delta = Math.round(need - btnTop);
+      btn.style.top = Math.round(btnTop + delta) + 'px';
+      if (cap) cap.style.top = Math.round((parseFloat(cap.style.top) || 0) + delta) + 'px';
+      var ab = btn.closest('.t396__artboard');
+      if (ab) {
+        var abH = parseFloat(ab.style.height) || ab.getBoundingClientRect().height / z;
+        ab.style.height = Math.round(abH + delta) + 'px';
+      }
+    }
+  }
+  document.addEventListener('click', function (ev) {
+    if (ev.target.closest && ev.target.closest('a[href="#Our"]')) {
+      setTimeout(fixProductsPopupDesktop, 400);
+      setTimeout(fixProductsPopupDesktop, 950);
+    }
+  }, true);
+
+  function boot() { pinHeader(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 1200); });
+  else setTimeout(boot, 1200);
+  window.addEventListener('load', function () { setTimeout(boot, 800); });
 })();
