@@ -664,6 +664,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
 
   function placeSwitcher() {
     if (!swContainer || !swAnchorEls) return;
+    if (swContainer.dataset && swContainer.dataset.norm === '1') return;
     var enEl = swAnchorEls[0], fiEl = swAnchorEls[1];
     var artboard = enEl.closest('.t396__artboard') || document.body;
     var enRect = enEl.getBoundingClientRect();
@@ -917,19 +918,72 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   function normalizeSwitcher() {
     var sw = document.querySelector('.aalto-lang-switcher');
     if (!sw) return;
-    var btn = [].slice.call(document.querySelectorAll('.tn-atom__button-text')).filter(function (e) {
-      var r = e.getBoundingClientRect(); return r.top < 90 && r.width > 0;
+    var btnText = [].slice.call(document.querySelectorAll('.tn-atom__button-text')).filter(function (e) {
+      var r = e.getBoundingClientRect(); return r.width > 0;
     })[0];
-    if (!btn) return;
-    var br = (btn.closest('[data-elem-id]') || btn).getBoundingClientRect();
-    var w = sw.getBoundingClientRect().width || 90;
-    var left = Math.round(br.right + 20);
-    var maxLeft = window.innerWidth - w - 24;
-    if (left > maxLeft) left = maxLeft;
+    var btnElem = btnText && btnText.closest('.t396__elem');
+    var artboard = btnElem && btnElem.closest('.t396__artboard');
+    if (!btnElem || !artboard) {
+      // mobile: button hidden — hand control back to the engine's fixed placement
+      if (sw.dataset.norm === '1') {
+        sw.dataset.norm = '';
+        sw.style.position = '';
+        if (sw.parentElement !== document.body) document.body.appendChild(sw);
+      }
+      return;
+    }
+    sw.dataset.norm = '1';
+    // live inside the header (scrolls together with it): absolute in artboard,
+    // placed to the LEFT of the "Get in Touch" button
+    if (sw.parentElement !== artboard) artboard.appendChild(sw);
+    sw.style.position = 'absolute';
+    var z = zoomOf(btnElem);
+    var swW = (sw.getBoundingClientRect().width || 90) / z;
+    var swH = (sw.getBoundingClientRect().height || 16) / z;
+    var btnTop = st(btnElem);
+    var btnH = btnElem.getBoundingClientRect().height / z;
     sw.style.right = 'auto';
-    sw.style.left = left + 'px';
-    sw.style.top = Math.round(br.top + br.height / 2 - (sw.getBoundingClientRect().height || 16) / 2) + 'px';
+    sw.style.left = Math.round(sl(btnElem) - swW - 28) + 'px';
+    sw.style.top = Math.round(btnTop + btnH / 2 - swH / 2) + 'px';
     sw.style.visibility = 'visible';
+    sw.style.zIndex = '50';
+  }
+
+  /* Mobile re-stack of the Products popup (rec897136426): the exported
+   * one-column layout overlaps (9-44px, present in the original too).
+   * Lay elements out sequentially using their real rendered heights —
+   * correct for every language. Phones only, single-column layouts only. */
+  var PP = {
+    order: ['1741793181263','1741793181280','1741793181311','1741793181318',
+            '1769781375124000001','1769782896869000002','1769783986425000007',
+            '1769783168730000004','1769783834272000006','1769783568645000005',
+            '1741793181469','1741793181484'],
+    gapAfter: { '1741793181263':10, '1741793181280':20, '1741793181311':6,
+                '1741793181318':26, '1769783568645000005':36, '1741793181469':16 },
+    defGap: 26,
+    hide: ['176061570063160290','1769983341818000001','1741793181359','1741793181388'],
+    bg: '1741793181242'
+  };
+  function restackProductsPopup() {
+    if (window.innerWidth >= 640) return;
+    var els = PP.order.map(q).filter(Boolean);
+    if (els.length < 8) return;
+    var first = els[0];
+    if (first.getBoundingClientRect().height < 5) return; // popup not rendered yet
+    if (els.some(function (e) { return (parseFloat(e.style.left) || 0) > 60; })) return; // not single-column
+    var z = zoomOf(first);
+    var y = st(first);
+    els.forEach(function (e) {
+      e.style.top = Math.round(y) + 'px';
+      var h = e.getBoundingClientRect().height / z;
+      y += h + (PP.gapAfter[e.getAttribute('data-elem-id')] || PP.defGap);
+    });
+    PP.hide.forEach(function (id) { var e = q(id); if (e) e.style.display = 'none'; });
+    var bg = q(PP.bg);
+    if (bg) bg.style.height = Math.round(y + 30 - st(bg)) + 'px';
+    // let the zero-block/popup recalc its scroll area
+    var pop = first.closest('.t-popup');
+    if (pop) pop.style.overflowY = 'auto';
   }
 
   var t;
@@ -937,12 +991,16 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     try { normalizeMenu(); } catch (e) {}
     try { normalizeCards(); } catch (e) {}
     try { normalizeSwitcher(); } catch (e) {}
+    try { restackProductsPopup(); } catch (e) {}
   }
   function schedule(ms) { clearTimeout(t); t = setTimeout(runAll, ms); }
 
   window.addEventListener('resize', function () { schedule(300); });
   document.addEventListener('click', function (ev) {
-    if (ev.target.closest && ev.target.closest('.aalto-lang-link')) schedule(80);
+    if (!ev.target.closest) return;
+    if (ev.target.closest('.aalto-lang-link')) schedule(80);
+    var a = ev.target.closest('a[href="#Our"]');
+    if (a) { setTimeout(restackProductsPopup, 350); setTimeout(restackProductsPopup, 900); }
   }, true);
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () { schedule(500); });
