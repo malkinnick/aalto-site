@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v31-sw-menu-fix';
+window.__aaltoVer = 'v32-a11y-switcher-title-tap';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -549,6 +549,12 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
 
   function applyMeta() {
     document.documentElement.lang = current;
+    var TITLES = {
+      fi: 'Aalto Beverages — premium Low & No -juomat ja alkoholijuomat Suomessa',
+      en: 'Aalto Beverages — premium Low & No and alcoholic drinks in Finland',
+      sv: 'Aalto Beverages — premium Low & No och alkoholdrycker i Finland'
+    };
+    if (TITLES[current]) document.title = TITLES[current];
     var md = document.querySelector('meta[name="description"]');
     if (md) {
       if (!md.getAttribute('data-i18n-raw')) md.setAttribute('data-i18n-raw', md.getAttribute('content') || '');
@@ -598,24 +604,24 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   var swAnchorEls = null;
 
   var GLOBE_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18"></path><path d="M12 3c2.6 2.7 3.9 5.7 3.9 9s-1.3 6.3-3.9 9c-2.6-2.7-3.9-5.7-3.9-9s1.3-6.3 3.9-9z"></path></svg>';
-  function swClose(container) { container.classList.remove('open'); var t = container.querySelector('.aalto-lang-toggle'); if (t) t.setAttribute('aria-expanded', 'false'); }
+  function swClose(container, restoreFocus) { container.classList.remove('open'); var t = container.querySelector('.aalto-lang-toggle'); if (t) { t.setAttribute('aria-expanded', 'false'); if (restoreFocus) { try { t.focus(); } catch (e) {} } } }
   function swBuildInner(container) {
     var toggle = document.createElement('button');
     toggle.type = 'button'; toggle.className = 'aalto-lang-toggle';
-    toggle.setAttribute('aria-label', 'Language'); toggle.setAttribute('aria-haspopup', 'true'); toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-label', 'Language'); toggle.setAttribute('aria-expanded', 'false');
     toggle.innerHTML = GLOBE_SVG + '<span class="aalto-lang-cur"></span>';
     container.appendChild(toggle);
-    var menu = document.createElement('div'); menu.className = 'aalto-lang-menu'; menu.setAttribute('role', 'menu');
+    var menu = document.createElement('div'); menu.className = 'aalto-lang-menu';
     LANGS.forEach(function (lang) {
       var a = document.createElement('a'); a.href = '?lang=' + lang; a.textContent = lang.toUpperCase();
-      a.className = 'aalto-lang-link'; a.setAttribute('data-lang', lang); a.setAttribute('role', 'menuitem');
-      a.addEventListener('click', function (ev) { ev.preventDefault(); setLang(lang); swClose(container); });
+      a.className = 'aalto-lang-link'; a.setAttribute('data-lang', lang);
+      a.addEventListener('click', function (ev) { ev.preventDefault(); setLang(lang); swClose(container, true); });
       menu.appendChild(a);
     });
     container.appendChild(menu);
     toggle.addEventListener('click', function (ev) { ev.stopPropagation(); var open = container.classList.toggle('open'); toggle.setAttribute('aria-expanded', open ? 'true' : 'false'); });
     document.addEventListener('click', function (ev) { if (!container.contains(ev.target)) swClose(container); });
-    document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') swClose(container); });
+    document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && container.classList.contains('open')) swClose(container, true); });
   }
   function buildSwitcher() {
     var els = SW_HIDE_IDS.map(function (id) {
@@ -752,7 +758,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     st.textContent =
       /* minimalist globe icon in header style + click-to-open dropdown */
       '.aalto-lang-switcher,.aalto-lang-switcher--fixed{position:fixed!important;top:16px!important;right:16px!important;left:auto!important;bottom:auto!important;transform:none!important;z-index:9600;line-height:1;color:#f5f5f5;visibility:visible!important;}' +
-      '.aalto-lang-toggle{display:inline-flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;color:inherit;padding:0;font:600 14px/1 \'Helvetica\',Arial,sans-serif;}' +
+      '.aalto-lang-toggle{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;color:inherit;padding:0;min-width:44px;min-height:44px;font:600 14px/1 \'Helvetica\',Arial,sans-serif;}' +
       '.aalto-lang-toggle:hover{opacity:.82;}' +
       '.aalto-lang-toggle svg{width:20px;height:20px;display:block;}' +
       '.aalto-lang-cur{letter-spacing:.4px;}' +
