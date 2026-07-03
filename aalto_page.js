@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v27-products-bg';
+window.__aaltoVer = 'v28-sw-anchor';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -1009,7 +1009,10 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
       if (rec) rec.style.height = outH + 'px';
     }
     var wrap = first.closest('.t-popup__container');
-    if (wrap) wrap.style.height = 'auto';
+    if (wrap) { wrap.style.height = 'auto';
+      var bgColor = bg ? getComputedStyle(bg).backgroundColor : '';
+      if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)') { wrap.style.backgroundColor = bgColor; wrap.style.minHeight = '100vh'; if (rec) rec.style.backgroundColor = bgColor; }
+    }
     var pop = first.closest('.t-popup');
     if (pop) { pop.style.overflowY = 'auto'; pop.style.webkitOverflowScrolling = 'touch'; }
   }
@@ -1764,5 +1767,41 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   var I = window.AaltoI18n;
   if (I && I.setLang && !I.__b2bHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); setTimeout(restack, 80); return r; }; I.__b2bHook = 1; }
   window.__aaltoB2B = restack;
+})();
+
+/* ============================================================
+ * Aalto — desktop: anchor the language switcher right after the
+ * header menu, vertically aligned with the menu labels, so it
+ * never overlaps (CTA slot is free). Mobile (<960) keeps the CSS
+ * placement (left of the burger). Fixed element, recomputed on
+ * resize / language change — menu stays pinned so it's stable.
+ * ============================================================ */
+(function () {
+  var MENU_IDS = ['1741773916824','1741773916815','1741773916794','1741773916806','1741773916845','1741773916834'];
+  function sw() { return document.querySelector('.aalto-lang-switcher'); }
+  function q(id) { return document.querySelector('[data-elem-id="' + id + '"]'); }
+  function place() {
+    var s = sw(); if (!s) return;
+    if (window.innerWidth < 960) { s.style.removeProperty('left'); s.style.removeProperty('right'); s.style.removeProperty('top'); return; } // mobile: CSS handles
+    var items = MENU_IDS.map(q).filter(function (e) { if (!e) return false; var r = e.getBoundingClientRect(); return r.width > 0 && r.top < 120; });
+    if (items.length < 3) return;
+    var menuRight = 0, cTop = 0, cBot = 0;
+    items.forEach(function (e) { var r = e.getBoundingClientRect(); if (r.right > menuRight) menuRight = r.right; cTop += r.top; cBot += r.bottom; });
+    var mid = (cTop + cBot) / (2 * items.length);
+    var sr = s.getBoundingClientRect(); var pw = sr.width || 98, ph = sr.height || 30;
+    var left = Math.round(menuRight + 24);
+    var maxLeft = Math.round(window.innerWidth - pw - 12);
+    if (left > maxLeft) left = maxLeft;
+    s.style.setProperty('left', left + 'px', 'important');   // base CSS uses !important
+    s.style.setProperty('right', 'auto', 'important');
+    s.style.setProperty('top', Math.round(mid - ph / 2) + 'px', 'important');
+  }
+  function schedule() { [400, 1000, 2000, 3500].forEach(function (d) { setTimeout(place, d); }); }
+  window.addEventListener('resize', function () { setTimeout(place, 120); });
+  var I = window.AaltoI18n;
+  if (I && I.setLang && !I.__swAnchorHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); setTimeout(place, 60); return r; }; I.__swAnchorHook = 1; }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedule); else schedule();
+  window.addEventListener('load', schedule);
+  window.__aaltoSwAnchor = place;
 })();
 
