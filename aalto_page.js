@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v16-switcher-corner';
+window.__aaltoVer = 'v17-cta-tiles';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -1559,5 +1559,29 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   else schedule();
   window.addEventListener('load', schedule);
   window.__aaltoForms = { config: CONFIG, arm: armAll };
+})();
+
+/* ============================================================
+ * Aalto — UX tweaks (2026-07-03, Nikita):
+ *  1) hide the redundant header "Get in Touch" CTA (elem 1741774643714)
+ *  2) normalize cramped tile-title tracking (-2px -> -0.5px) on all langs
+ * CSS-only, reversible, language-agnostic.
+ * ============================================================ */
+(function () {
+  var TILE_TITLE_IDS = ['1742976412152','176061955356893660','1742976412184',
+                        '1742976412168','1742976412099','1742976412114'];
+  var css = '';
+  // 1) remove header CTA
+  css += '[data-elem-id="1741774643714"]{display:none!important;}';
+  // 2) looser letter-spacing on tile titles (About/Products/Suppliers/B2B Catalogue/B2B/E-Shop)
+  var sel = TILE_TITLE_IDS.map(function (id) {
+    return '[data-elem-id="' + id + '"] .tn-atom,[data-elem-id="' + id + '"]';
+  }).join(',');
+  css += sel + '{letter-spacing:-0.5px!important;}';
+  var st = document.createElement('style');
+  st.id = 'aalto-ux-tweaks';
+  st.textContent = css;
+  (document.head || document.documentElement).appendChild(st);
+  window.__aaltoTweaks = { tileIds: TILE_TITLE_IDS };
 })();
 
