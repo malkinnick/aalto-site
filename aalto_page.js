@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v18-contacts-links';
+window.__aaltoVer = 'v19-contacts-links2';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -1580,7 +1580,9 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   css += sel + '{letter-spacing:-0.5px!important;}';
   // 3) Contacts popup (rec912651493) is on a LIGHT bg — its hyperlinks were white and blended in.
   //    Make every text link dark/contrasting (keep the white close-X).
-  css += '#rec912651493 a:not([href="#close"]):not(.t-submit):not(.t-btn){color:#005E8D!important;text-decoration:underline!important;}';
+  var cbase = '#rec912651493 a:not([href="#close"]):not(.t-submit):not(.t-btn)';
+  css += cbase + '{text-decoration:underline!important;}';
+  css += cbase + ',' + cbase + ' *{color:#005E8D!important;}'; // colour the <a> AND its descendants (email sits in <u> with its own white)
   var st = document.createElement('style');
   st.id = 'aalto-ux-tweaks';
   st.textContent = css;
