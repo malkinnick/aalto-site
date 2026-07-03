@@ -1,4 +1,5 @@
-window.__aaltoVer = 'v30-deploy-retry';/* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
+window.__aaltoVer = 'v31-sw-menu-fix';
+/* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
 window.isiOSVersion='';if(window.isiOS){var version=(navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);if(version!==null){window.isiOSVersion=[parseInt(version[1],10),parseInt(version[2],10),parseInt(version[3]||0,10)]}}
@@ -755,9 +756,9 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
       '.aalto-lang-toggle:hover{opacity:.82;}' +
       '.aalto-lang-toggle svg{width:20px;height:20px;display:block;}' +
       '.aalto-lang-cur{letter-spacing:.4px;}' +
-      '.aalto-lang-menu{position:absolute;top:calc(100% + 8px);right:0;display:none;flex-direction:column;min-width:64px;background:rgba(10,20,28,.92);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:10px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.28);}' +
+      '.aalto-lang-menu{position:absolute;top:calc(100% + 8px);right:0;display:none;flex-direction:column;gap:2px;min-width:64px;background:rgba(10,20,28,.92);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:10px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.28);}' +
       '.aalto-lang-switcher.open .aalto-lang-menu{display:flex;}' +
-      '.aalto-lang-menu .aalto-lang-link{color:#fff;text-decoration:none;opacity:.8;padding:8px 14px;border-radius:6px;font:600 14px/1 \'Helvetica\',Arial,sans-serif;}' +
+      '.aalto-lang-menu .aalto-lang-link{display:block;margin:0 !important;flex:0 0 auto;color:#fff;text-decoration:none;opacity:.8;padding:8px 14px;border-radius:6px;font:600 14px/1 \'Helvetica\',Arial,sans-serif;white-space:nowrap;}' +
       '.aalto-lang-menu .aalto-lang-link:hover{background:rgba(255,255,255,.12);opacity:1;}' +
       '.aalto-lang-menu .aalto-lang-link.is-active{opacity:1;font-weight:800;background:rgba(255,255,255,.10);}' +
       /* mobile: keep clear of the burger (top-right) */
@@ -1800,4 +1801,3 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   window.addEventListener('load', schedule);
   window.__aaltoSwAnchor = place;
 })();
-
