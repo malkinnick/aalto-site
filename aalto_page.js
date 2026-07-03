@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v22-footer-restacker';
+window.__aaltoVer = 'v23-header-gpu';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -1262,8 +1262,10 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
       var sw = document.querySelector('.aalto-lang-switcher');
       if (sw && sw.dataset.norm === '1') els.push(sw);
       els.forEach(function (e) {
+        if (!e.__pinPrep) { e.style.willChange = 'transform'; e.style.backfaceVisibility = 'hidden'; e.__pinPrep = 1; }
         var z = zoomOf(e);
-        e.style.transform = x ? 'translateX(' + Math.round(x / z) + 'px)' : '';
+        // translate3d + will-change -> compositor layer -> counter-move stays in sync with the scroll (kills jitter)
+        e.style.transform = x ? 'translate3d(' + Math.round(x / z) + 'px,0,0)' : 'translateZ(0)';
       });
     }
     // rAF monitor: works no matter HOW the artboard gets scrolled
