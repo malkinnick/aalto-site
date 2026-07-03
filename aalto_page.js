@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v20-email-com';
+window.__aaltoVer = 'v21-suppliers-subtitle';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -1588,5 +1588,46 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   st.textContent = css;
   (document.head || document.documentElement).appendChild(st);
   window.__aaltoTweaks = { tileIds: TILE_TITLE_IDS };
+})();
+
+/* ============================================================
+ * Aalto — Suppliers popup (rec913110922): the subtitle atom
+ * (1742928351560) is white-space:nowrap, so long SV/FI strings run
+ * under the top-right image (1741793181493) — worst in Edge/SV.
+ * Fix: allow wrapping + cap max-width at the image's left edge.
+ * Runtime-measured (per breakpoint/language), idempotent.
+ * ============================================================ */
+(function () {
+  var SUB = '1742928351560', IMG = '1741793181493';
+  function fix() {
+    var sub = document.querySelector('[data-elem-id="' + SUB + '"]');
+    if (!sub) return;
+    var atom = sub.querySelector('.tn-atom') || sub;
+    atom.style.whiteSpace = 'normal';                // nowrap sits on the atom -> override it here
+    var img = document.querySelector('[data-elem-id="' + IMG + '"]');
+    if (!img) { sub.style.width = ''; return; }
+    var sr = sub.getBoundingClientRect(), ir = img.getBoundingClientRect();
+    if (sr.height < 3 || ir.height < 3) return;      // not rendered yet
+    var vOverlap = ir.top < sr.bottom && ir.bottom > sr.top;
+    if (ir.left > sr.left && vOverlap) {             // desktop row: image to the right
+      var subLeft = parseFloat(sub.style.left) || 0; // local (artboard) px
+      var imgLeft = parseFloat(img.style.left) || 0;
+      var mw = Math.round(imgLeft - subLeft - 28);
+      if (mw > 120) { sub.style.width = mw + 'px'; atom.style.width = '100%'; }
+    } else {
+      sub.style.width = '';                           // stacked (mobile): full width
+    }
+  }
+  function schedule() { [300, 900, 1800].forEach(function (d) { setTimeout(fix, d); }); }
+  document.addEventListener('click', function (ev) {
+    var a = ev.target.closest && ev.target.closest('a[href="#Suppliers"],[data-tooltip-hook="#Suppliers"]');
+    if (a) [350, 900].forEach(function (d) { setTimeout(fix, d); });
+  }, true);
+  window.addEventListener('resize', function () { setTimeout(fix, 150); });
+  var I = window.AaltoI18n;
+  if (I && I.setLang && !I.__suppHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); setTimeout(fix, 60); return r; }; I.__suppHook = 1; }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedule); else schedule();
+  window.addEventListener('load', schedule);
+  window.__aaltoSuppliers = fix;
 })();
 
