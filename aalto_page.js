@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v26-b2b-mobile-stack';
+window.__aaltoVer = 'v27-products-bg';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -975,7 +975,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
             '1741793181469','1741793181484'],
     gapAfter: { '1741793181263':10, '1741793181280':20, '1741793181311':6,
                 '1741793181318':26, '1769783568645000005':36, '1741793181469':16 },
-    defGap: 26,
+    defGap: 20,
     hide: ['176061570063160290','1769983341818000001','1741793181359','1741793181388'],
     bg: '1741793181242'
   };
@@ -995,7 +995,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     });
     PP.hide.forEach(function (id) { var e = q(id); if (e) e.style.display = 'none'; });
     var bg = q(PP.bg);
-    if (bg) bg.style.height = Math.round(y + 80 - st(bg)) + 'px';
+    if (bg) { bg.style.height = Math.round(y + 200 - st(bg)) + 'px'; var bgW = bg.closest('.t396__artboard'); if (bgW) bg.style.width = Math.round(bgW.getBoundingClientRect().width / (parseFloat(bg.style.zoom)||1)) + 'px'; }
     // grow the scrollable area to the new content bottom
     var ab2 = first.closest('.t396__artboard');
     // zoom sits on the ELEMENTS (not the artboard): containers need visual px
