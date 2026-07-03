@@ -1011,3 +1011,36 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   setTimeout(runAll, 1800);
   window.__aaltoNormalize = runAll;
 })();
+
+/* ------------------------------------------------------------------ */
+/* Accessibility quick wins (visual design unchanged):                 */
+/* keyboard focus indicator, decorative alt, FI phone placeholder,     */
+/* larger hit-areas for small header/footer links.                     */
+/* ------------------------------------------------------------------ */
+(function () {
+  'use strict';
+  var st = document.createElement('style');
+  st.textContent =
+    '#aalto-mount a:focus-visible,#aalto-mount button:focus-visible,.aalto-lang-link:focus-visible{outline:2px solid #fff;outline-offset:3px;border-radius:2px;}' +
+    /* invisible padding enlarges touch targets without moving layout */
+    '#aalto-mount .tn-elem[data-elem-type="text"] a{padding:12px 6px;margin:-12px -6px;}' +
+    '.aalto-lang-link{padding:12px 4px;margin:-12px -4px;}';
+  document.head.appendChild(st);
+
+  function apply() {
+    var m = document.getElementById('aalto-mount');
+    if (!m) return;
+    // decorative images: empty alt so screen readers skip them
+    var imgs = m.querySelectorAll('img:not([alt]), img[alt=""]');
+    for (var i = 0; i < imgs.length; i++) imgs[i].setAttribute('alt', '');
+    // phone field: Finnish placeholder instead of US mask remnant
+    var tel = m.querySelector('input[type="tel"], input[name="Phone"]');
+    if (tel && /\+1\(/.test(tel.placeholder || '')) tel.placeholder = '+358 40 123 4567';
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(apply, 800); });
+  } else {
+    setTimeout(apply, 800);
+  }
+  window.addEventListener('load', function () { setTimeout(apply, 500); });
+})();
