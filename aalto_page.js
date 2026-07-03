@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v21-suppliers-subtitle';
+window.__aaltoVer = 'v22-footer-restacker';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -995,11 +995,11 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     });
     PP.hide.forEach(function (id) { var e = q(id); if (e) e.style.display = 'none'; });
     var bg = q(PP.bg);
-    if (bg) bg.style.height = Math.round(y + 30 - st(bg)) + 'px';
+    if (bg) bg.style.height = Math.round(y + 80 - st(bg)) + 'px';
     // grow the scrollable area to the new content bottom
     var ab2 = first.closest('.t396__artboard');
     // zoom sits on the ELEMENTS (not the artboard): containers need visual px
-    var outH = Math.round((y + 56) * z);
+    var outH = Math.round((y + 140) * z);  // extra bottom clearance (iPhone Safari truncation)
     if (ab2) {
       ab2.style.height = outH + 'px';
       ab2.style.maxHeight = 'none';
@@ -1028,7 +1028,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     if (!ev.target.closest) return;
     if (ev.target.closest('.aalto-lang-link')) schedule(80);
     var a = ev.target.closest('a[href="#Our"]');
-    if (a) { setTimeout(restackProductsPopup, 350); setTimeout(restackProductsPopup, 900); }
+    if (a) { [350,900,1700,2800].forEach(function(d){setTimeout(restackProductsPopup,d);}); }
   }, true);
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () { schedule(500); });
@@ -1629,5 +1629,58 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedule); else schedule();
   window.addEventListener('load', schedule);
   window.__aaltoSuppliers = fix;
+})();
+
+/* ============================================================
+ * Aalto — keep the "© 2026 …" footer (1751550459538) below the
+ * tile row. Its local top is fixed per breakpoint, but card heights
+ * vary by language/width, so tall cards overlap it. Reposition the
+ * footer under the real card bottom; grow the artboard only if it
+ * won't otherwise fit. Runtime, idempotent, only ever moves it DOWN.
+ * ============================================================ */
+(function () {
+  var FOOT = '1751550459538';
+  var CARD_BGS = ['1742976412158','1742976412203','1742976412138',
+                  '1742976412181','1742976412212','1742976412208'];
+  function q(id) { return document.querySelector('[data-elem-id="' + id + '"]'); }
+  function zoomOf(el) {
+    var ab = el.closest && el.closest('.t396__artboard');
+    var t = ab && ab.style.transform; var m = t && t.match(/scale\(([0-9.]+)\)/);
+    return m ? parseFloat(m[1]) : 1;
+  }
+  function fix() {
+    var foot = q(FOOT); if (!foot) return;
+    var ab = foot.closest('.t396__artboard'); if (!ab) return;
+    var z = zoomOf(foot);
+    var maxB = 0;
+    CARD_BGS.forEach(function (id) {
+      var e = q(id); if (!e) return;
+      var top = parseFloat(e.style.top) || 0;
+      var h = e.getBoundingClientRect().height / z;
+      if (h < 30) return;
+      var b = top + h; if (b > maxB) maxB = b;
+    });
+    if (maxB < 50) return;                         // cards not rendered yet
+    var footTop = parseFloat(foot.style.top) || 0;
+    var want = Math.round(maxB + 24);
+    if (want > footTop) { foot.style.top = want + 'px'; footTop = want; }
+    // grow the artboard ONLY if the footer would be clipped by it (avoids adding scroll where it already fits)
+    var footH = foot.getBoundingClientRect().height / z || 40;
+    var footBottom = footTop + footH;
+    var curH = parseFloat(ab.style.height) || (ab.getBoundingClientRect().height / z);
+    if (footBottom > curH) {
+      var need = Math.round(footBottom + 10);
+      ab.style.height = need + 'px';
+      var t396 = ab.closest('.t396'); if (t396) t396.style.height = need + 'px';
+      var r = ab.closest('.r'); if (r) r.style.minHeight = need + 'px';
+    }
+  }
+  function schedule() { [500, 1200, 2400].forEach(function (d) { setTimeout(fix, d); }); }
+  window.addEventListener('resize', function () { setTimeout(fix, 200); });
+  var I = window.AaltoI18n;
+  if (I && I.setLang && !I.__footHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); setTimeout(fix, 80); return r; }; I.__footHook = 1; }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedule); else schedule();
+  window.addEventListener('load', schedule);
+  window.__aaltoFooter = fix;
 })();
 
