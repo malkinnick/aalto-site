@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v23-header-gpu';
+window.__aaltoVer = 'v24-suppliers-robust';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -1607,17 +1607,16 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     var atom = sub.querySelector('.tn-atom') || sub;
     atom.style.whiteSpace = 'normal';                // nowrap sits on the atom -> override it here
     var img = document.querySelector('[data-elem-id="' + IMG + '"]');
-    if (!img) { sub.style.width = ''; return; }
-    var sr = sub.getBoundingClientRect(), ir = img.getBoundingClientRect();
-    if (sr.height < 3 || ir.height < 3) return;      // not rendered yet
-    var vOverlap = ir.top < sr.bottom && ir.bottom > sr.top;
-    if (ir.left > sr.left && vOverlap) {             // desktop row: image to the right
-      var subLeft = parseFloat(sub.style.left) || 0; // local (artboard) px
-      var imgLeft = parseFloat(img.style.left) || 0;
+    // Use LOCAL coords (style.left) — available immediately, independent of the
+    // image lazy-loading (getBoundingClientRect would be 0 until the img paints).
+    if (!img || window.innerWidth < 960) { sub.style.width = ''; return; }  // mobile/stacked: full width
+    var subLeft = parseFloat(sub.style.left) || 0;
+    var imgLeft = parseFloat(img.style.left) || 0;
+    if (imgLeft > subLeft + 120) {                   // desktop row: image to the right
       var mw = Math.round(imgLeft - subLeft - 28);
       if (mw > 120) { sub.style.width = mw + 'px'; atom.style.width = '100%'; }
     } else {
-      sub.style.width = '';                           // stacked (mobile): full width
+      sub.style.width = '';
     }
   }
   function schedule() { [300, 900, 1800].forEach(function (d) { setTimeout(fix, d); }); }
