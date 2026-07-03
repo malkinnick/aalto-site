@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v32-a11y-switcher-title-tap';
+window.__aaltoVer = 'v33-pin-hero-subtitle';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -1263,7 +1263,8 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
 
   /* --- header pin --- */
   var HEADER_IDS = ['1741773916636','1741773916872','1741773916824','1741773916815',
-                    '1741773916794','1741773916806','1741773916845','1741773916834','1741774643714'];
+                    '1741773916794','1741773916806','1741773916845','1741773916834','1741774643714',
+                    '1741773916599'];
   var pinned = false;
   function pinHeader() {
     if (pinned || window.innerWidth < 960) return;
