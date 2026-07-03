@@ -1250,22 +1250,23 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     var ab = document.querySelector('#rec913130404 .t396__artboard');
     if (!ab) return;
     pinned = true;
-    var ticking = false;
-    ab.addEventListener('scroll', function () {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(function () {
-        ticking = false;
-        var x = ab.scrollLeft;
-        var els = HEADER_IDS.map(q).filter(Boolean);
-        var sw = document.querySelector('.aalto-lang-switcher');
-        if (sw && sw.dataset.norm === '1') els.push(sw);
-        els.forEach(function (e) {
-          var z = zoomOf(e);
-          e.style.transform = x ? 'translateX(' + Math.round(x / z) + 'px)' : '';
-        });
+    var lastX = -1;
+    function apply(x) {
+      var els = HEADER_IDS.map(q).filter(Boolean);
+      var sw = document.querySelector('.aalto-lang-switcher');
+      if (sw && sw.dataset.norm === '1') els.push(sw);
+      els.forEach(function (e) {
+        var z = zoomOf(e);
+        e.style.transform = x ? 'translateX(' + Math.round(x / z) + 'px)' : '';
       });
-    }, { passive: true });
+    }
+    // rAF monitor: works no matter HOW the artboard gets scrolled
+    // (wheel plugin, drag, programmatic) — cheap, only writes on change
+    (function loop() {
+      var x = ab.scrollLeft;
+      if (x !== lastX) { lastX = x; apply(x); }
+      requestAnimationFrame(loop);
+    })();
   }
 
   /* --- Products popup desktop spacing --- */
