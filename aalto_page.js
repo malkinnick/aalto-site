@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v35-pin-hero-redeploy';
+window.__aaltoVer = 'v36-seo-a11y-headings';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -1807,4 +1807,128 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedule); else schedule();
   window.addEventListener('load', schedule);
   window.__aaltoSwAnchor = place;
+})();
+
+/* ============================================================
+ * Aalto — SEO: schema.org (Organization) + Open Graph/Twitter,
+ * language-aware (updates og on lang switch). Idempotent.
+ * ============================================================ */
+(function () {
+  try {
+    if (!document.getElementById('aalto-jsonld')) {
+      var ld = document.createElement('script');
+      ld.type = 'application/ld+json'; ld.id = 'aalto-jsonld';
+      ld.textContent = JSON.stringify({
+        "@context": "https://schema.org", "@type": "Organization",
+        "name": "Aalto Beverages Oy", "url": "https://aaltojuomat.fi/",
+        "email": "info@aaltojuomat.com", "telephone": "+358442398270",
+        "description": "Importer and distributor of premium Low & No and traditional alcoholic beverages for the Finnish market.",
+        "address": { "@type": "PostalAddress", "streetAddress": "Sahaajankatu 20-22 D 282", "postalCode": "00880", "addressLocality": "Helsinki", "addressCountry": "FI" },
+        "areaServed": "FI"
+      });
+      (document.head || document.documentElement).appendChild(ld);
+    }
+  } catch (e) {}
+  function meta(prop, val, useName) {
+    if (!val) return;
+    var key = useName ? 'name' : 'property';
+    var m = document.head.querySelector('meta[' + key + '="' + prop + '"]');
+    if (!m) { m = document.createElement('meta'); m.setAttribute(key, prop); document.head.appendChild(m); }
+    m.setAttribute('content', val);
+  }
+  function updateOG() {
+    try {
+      var lang = document.documentElement.lang || 'fi';
+      var locale = { fi: 'fi_FI', en: 'en_US', sv: 'sv_SE' }[lang] || 'fi_FI';
+      var dm = document.head.querySelector('meta[name="description"]');
+      var desc = dm ? dm.getAttribute('content') : '';
+      meta('og:title', document.title);
+      meta('og:description', desc);
+      meta('og:type', 'website');
+      meta('og:url', 'https://aaltojuomat.fi/');
+      meta('og:site_name', 'Aalto Beverages');
+      meta('og:locale', locale);
+      meta('twitter:card', 'summary', true);
+      meta('twitter:title', document.title, true);
+      meta('twitter:description', desc, true);
+    } catch (e) {}
+  }
+  updateOG();
+  var I = window.AaltoI18n;
+  if (I && I.setLang && !I.__seoHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); setTimeout(updateOG, 40); return r; }; I.__seoHook = 1; }
+  window.addEventListener('load', function () { setTimeout(updateOG, 300); });
+  window.__aaltoSEO = updateOG;
+})();
+
+/* ============================================================
+ * Aalto — a11y: mark the six tile titles as headings (level 2).
+ * Tilda renders them as divs; ARIA role gives screen-reader structure.
+ * ============================================================ */
+(function () {
+  var IDS = ['1742976412152', '176061955356893660', '1742976412184', '1742976412168', '1742976412099', '1742976412114'];
+  function apply() {
+    IDS.forEach(function (id) {
+      var el = document.querySelector('[data-elem-id="' + id + '"]');
+      if (!el) return;
+      var t = el.querySelector('.tn-atom') || el;
+      if (t.getAttribute('role') !== 'heading') { t.setAttribute('role', 'heading'); t.setAttribute('aria-level', '2'); }
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(apply, 600); });
+  else setTimeout(apply, 600);
+  window.addEventListener('load', function () { setTimeout(apply, 400); });
+  window.__aaltoHeadings = apply;
+})();
+
+/* ============================================================
+ * Aalto — a11y: popup focus trap + return focus to the trigger.
+ * Layers on top of decorateOpenPopup (which sets role=dialog).
+ * ============================================================ */
+(function () {
+  var lastTrigger = null;
+  document.addEventListener('click', function (ev) {
+    if (!ev.target.closest) return;
+    var a = ev.target.closest('a[href^="#"]');
+    if (a && a.getAttribute('href') !== '#close' && !a.classList.contains('aalto-lang-link')) lastTrigger = a;
+  }, true);
+  function visiblePopup() {
+    var pops = document.querySelectorAll('.t-popup');
+    for (var i = 0; i < pops.length; i++) {
+      if (pops[i].getBoundingClientRect().height > 100 && getComputedStyle(pops[i]).display !== 'none') return pops[i];
+    }
+    return null;
+  }
+  function focusables(root) {
+    return [].slice.call(root.querySelectorAll('a[href],button,input,textarea,select,[tabindex]:not([tabindex="-1"])'))
+      .filter(function (el) { return el.offsetParent !== null && !el.disabled; });
+  }
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key !== 'Tab') return;
+    var pop = visiblePopup(); if (!pop) return;
+    var f = focusables(pop); if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (!pop.contains(document.activeElement)) { ev.preventDefault(); first.focus(); }
+    else if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+    else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+  }, true);
+  function onClose() { if (lastTrigger) { try { lastTrigger.focus(); } catch (e) {} lastTrigger = null; } }
+  document.addEventListener('click', function (ev) {
+    if (ev.target.closest && ev.target.closest('a[href="#close"], .t-popup__close')) setTimeout(onClose, 60);
+  }, true);
+  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') setTimeout(onClose, 60); });
+  window.__aaltoPopupA11y = 1;
+})();
+
+/* ============================================================
+ * Aalto — robustness: warn in console if critical Tilda element
+ * ids are missing (early signal that a Tilda re-export broke wiring).
+ * ============================================================ */
+(function () {
+  var CRIT = ['1741773916599', '1742976412158', '1742976412203', '1742976412138', '1742976412181', '1742976412212', '1742976412208', 'rec913130404'];
+  function check() {
+    var missing = CRIT.filter(function (id) { return !document.querySelector('[data-elem-id="' + id + '"]') && !document.getElementById(id); });
+    if (missing.length) console.warn('[aalto] missing expected element ids (Tilda re-export?):', missing.join(', '));
+  }
+  window.addEventListener('load', function () { setTimeout(check, 4000); });
+  window.__aaltoSelfCheck = check;
 })();
