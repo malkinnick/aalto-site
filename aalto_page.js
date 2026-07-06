@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v44-seo-canonical';
+window.__aaltoVer = 'v45-seo-meta-desc';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -1844,8 +1844,15 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     try {
       var lang = document.documentElement.lang || 'fi';
       var locale = { fi: 'fi_FI', en: 'en_US', sv: 'sv_SE' }[lang] || 'fi_FI';
+      var DESCS = {
+        fi: 'Aalto Beverages \u2014 premium Low & No -alkoholi- ja alkoholijuomien maahantuoja ja jakelija Suomen markkinoille. B2B-katalogi ja toimitus koko Suomeen.',
+        en: 'Aalto Beverages \u2014 importer and distributor of premium Low & No-alcohol and alcoholic drinks for the Finnish market. B2B catalogue and delivery across Finland.',
+        sv: 'Aalto Beverages \u2014 import\u00f6r och distribut\u00f6r av premium Low & No-alkohol och alkoholhaltiga drycker f\u00f6r finska marknaden. B2B-katalog och leverans i Finland.'
+      };
+      var desc = DESCS[lang] || DESCS.fi;
       var dm = document.head.querySelector('meta[name="description"]');
-      var desc = dm ? dm.getAttribute('content') : '';
+      if (!dm) { dm = document.createElement('meta'); dm.setAttribute('name', 'description'); document.head.appendChild(dm); }
+      dm.setAttribute('content', desc);
       meta('og:title', document.title);
       meta('og:description', desc);
       meta('og:type', 'website');
