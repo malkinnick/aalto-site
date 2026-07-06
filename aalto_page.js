@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v36-seo-a11y-headings';
+window.__aaltoVer = 'v37-adaptive-fixes';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -987,10 +987,11 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     if (els.length < 8) return;
     var first = els[0];
     if (first.getBoundingClientRect().height < 5) return; // popup not rendered yet
-    if (els.some(function (e) { return (parseFloat(e.style.left) || 0) > 60; })) return; // not single-column
     var z = zoomOf(first);
+    var leftMargin = parseFloat(first.style.left) || 20;
     var y = st(first);
     els.forEach(function (e) {
+      e.style.left = Math.round(leftMargin) + 'px';   // force single column (was: bail if any left>60)
       e.style.top = Math.round(y) + 'px';
       var h = e.getBoundingClientRect().height / z;
       y += h + (PP.gapAfter[e.getAttribute('data-elem-id')] || PP.defGap);
@@ -1931,4 +1932,72 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   }
   window.addEventListener('load', function () { setTimeout(check, 4000); });
   window.__aaltoSelfCheck = check;
+})();
+
+/* ============================================================
+ * Aalto — B2B Catalogue tile: on narrow phones the title
+ * ("B2B Catalogue" / "B2B-katalogi" / "B2B-katalog") wraps to 2 lines
+ * (bottle image squeezes it) and overlaps the description. Shrink the
+ * title font just enough to keep it on ONE line. Desktop = no change.
+ * ============================================================ */
+(function () {
+  var ID = '1742976412184';
+  function fit() {
+    var el = document.querySelector('[data-elem-id="' + ID + '"]'); if (!el) return;
+    var atom = el.querySelector('.tn-atom') || el;
+    atom.style.removeProperty('font-size');           // reset to natural before measuring
+    var cs = getComputedStyle(atom);
+    var lh = parseFloat(cs.lineHeight) || (parseFloat(cs.fontSize) * 1.2);
+    var fs = parseFloat(cs.fontSize) || 24, guard = 0;
+    while (atom.getBoundingClientRect().height > lh * 1.4 && fs > 12 && guard < 40) {
+      fs -= 1; atom.style.setProperty('font-size', fs + 'px', 'important');
+      cs = getComputedStyle(atom); lh = parseFloat(cs.lineHeight) || fs * 1.2; guard++;
+    }
+  }
+  function run() { try { fit(); } catch (e) {} }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(run, 600); });
+  else setTimeout(run, 600);
+  window.addEventListener('load', function () { setTimeout(run, 400); });
+  window.addEventListener('resize', function () { setTimeout(run, 200); });
+  var I = window.AaltoI18n;
+  if (I && I.setLang && !I.__catTitleHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); setTimeout(run, 80); return r; }; I.__catTitleHook = 1; }
+  window.__aaltoCatTitle = run;
+})();
+
+/* ============================================================
+ * Aalto — desktop globe collision guard: on some intermediate
+ * widths (~1600) the language globe overlapped the last menu item
+ * ("Contacts"). This visual guard (elementFromPoint, zoom-agnostic)
+ * shifts the globe RIGHT until its left edge clears any menu item.
+ * Runs after swAnchor passes. Only moves right, never left.
+ * ============================================================ */
+(function () {
+  var MENU_IDS = ['1741773916824', '1741773916815', '1741773916794', '1741773916806', '1741773916845', '1741773916834'];
+  function guard() {
+    if (window.innerWidth < 960) return;                 // mobile: CSS corner, no menu
+    var s = document.querySelector('.aalto-lang-switcher'); if (!s) return;
+    for (var pass = 0; pass < 10; pass++) {
+      var gr = s.getBoundingClientRect(); if (!gr.width) return;
+      var y = Math.round(gr.top + gr.height / 2), x = Math.round(gr.left) - 3;
+      var el = document.elementFromPoint(x, y);
+      if (!el || el === s || s.contains(el)) return;
+      var owner = el.closest && el.closest('[data-elem-id]');
+      var oid = owner ? owner.getAttribute('data-elem-id') : null;
+      if (oid && MENU_IDS.indexOf(oid) >= 0) {
+        var er = owner.getBoundingClientRect();
+        var newLeft = Math.round(Math.max(er.right, gr.left) + 18);
+        var maxLeft = Math.round(window.innerWidth - gr.width - 10);
+        if (newLeft > maxLeft) newLeft = maxLeft;
+        if (newLeft <= Math.round(gr.left)) return;
+        s.style.setProperty('left', newLeft + 'px', 'important');
+        s.style.setProperty('right', 'auto', 'important');
+      } else return;
+    }
+  }
+  function run() { try { guard(); } catch (e) {} }
+  window.addEventListener('load', function () { [600, 1500, 3000, 4500].forEach(function (d) { setTimeout(run, d); }); });
+  window.addEventListener('resize', function () { setTimeout(run, 250); });
+  var I = window.AaltoI18n;
+  if (I && I.setLang && !I.__globeGuardHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); setTimeout(run, 120); return r; }; I.__globeGuardHook = 1; }
+  window.__aaltoGlobeGuard = run;
 })();
