@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v43-tiles-kept-original';
+window.__aaltoVer = 'v44-seo-canonical';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -1855,6 +1855,10 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
       meta('twitter:card', 'summary', true);
       meta('twitter:title', document.title, true);
       meta('twitter:description', desc, true);
+      var _cl = document.head.querySelector('link[rel="canonical"]');
+      if (!_cl) { _cl = document.createElement('link'); _cl.setAttribute('rel', 'canonical'); document.head.appendChild(_cl); }
+      _cl.setAttribute('href', 'https://aaltojuomat.fi/');   // override Tilda's http canonical
+      meta('robots', 'index,follow', true);
     } catch (e) {}
   }
   updateOG();
