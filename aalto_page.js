@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v40-products-popup-flow';
+window.__aaltoVer = 'v41-products-popup-flow-img';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -2015,12 +2015,13 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
  * Force at any width for testing with ?aaltoflow=1.
  * ============================================================ */
 (function () {
-  var REC = 'rec897136426', BTN = '1741793181469', BG = '1741793181242';
+  var REC = 'rec897136426', BTN = '1741793181469', BG = '1741793181242', IMG = '1741793181493';
   var ORDER = ['1741793181263', '1741793181280', '1741793181311', '1741793181318',
+               '1741793181493',
                '1769781375124000001', '1769782896869000002', '1769783986425000007',
                '1769783168730000004', '1769783834272000006', '1769783568645000005',
                '1741793181469', '1741793181484'];
-  var HIDE = ['1741793181493', '1741793181359', '1741793181288', '1741793181388',
+  var HIDE = ['1741793181359', '1741793181288', '1741793181388',
               '176061570063160290', '1769983341818000001', '1741793181369', '1741793181376', '1741793181399', '1741793181408'];
   function q(root, id) { return root.querySelector('[data-elem-id="' + id + '"]'); }
   function forced() { try { return /[?&]aaltoflow=1/.test(location.search); } catch (e) { return false; } }
@@ -2046,6 +2047,12 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
         setAll(e, ['min-height:48px', 'margin-top:8px']);
         if (atom) setAll(atom, ['min-height:48px', 'display:flex', 'align-items:center', 'justify-content:center', 'padding:12px 18px', 'box-sizing:border-box']);
         var la = e.querySelector('a'); if (la) setAll(la, ['width:100%', 'display:flex', 'align-items:center', 'justify-content:center']);
+      }
+      if (id === IMG) {                                        // decorative image: centered, capped, natural aspect (no crop/overlap)
+        setAll(e, ['width:100%', 'max-width:220px', 'margin:4px auto 6px', 'display:block', 'height:auto']);
+        var im = e.querySelector('img');
+        if (im) setAll(im, ['position:relative', 'left:auto', 'top:auto', 'width:100%', 'max-width:100%', 'height:auto', 'max-height:210px', 'object-fit:contain', 'border-radius:14px', 'display:block']);
+        else if (atom) setAll(atom, ['position:relative', 'left:auto', 'top:auto', 'width:100%', 'min-height:170px', 'height:auto', 'background-size:contain', 'background-repeat:no-repeat', 'background-position:center', 'border-radius:14px']);
       }
       flow.appendChild(e);                                      // reorder into flow sequence
     });
