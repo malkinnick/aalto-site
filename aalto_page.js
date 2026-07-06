@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v41d-products-popup-flow-img';
+window.__aaltoVer = 'v42-grid-flow-pilot';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -900,6 +900,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   }
 
   function normalizeCards() {
+    if (window.__aaltoGridFlowActive) return;   // grid-flow pilot owns the tiles
     if (window.innerWidth < 960) return;
     var cards = CARDS.map(function (c) {
       return { bg: q(c.bg), title: q(c.title), sub: q(c.sub), members: c.members.map(q).filter(Boolean) };
@@ -1946,6 +1947,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
 (function () {
   var IDS = ['1742976412152', '176061955356893660', '1742976412184', '1742976412168', '1742976412099', '1742976412114'];
   function fit() {
+    if (window.__aaltoGridFlowActive) return;   // grid-flow pilot: titles wrap naturally, no shrink
     IDS.forEach(function (ID) {
       var el = document.querySelector('[data-elem-id="' + ID + '"]'); if (!el) return;
       var atom = el.querySelector('.tn-atom') || el;
@@ -2071,4 +2073,102 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   var I = window.AaltoI18n;
   if (I && I.setLang && !I.__prodFlowHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); setTimeout(run, 120); return r; }; I.__prodFlowHook = 1; }
   window.__aaltoProductsFlow = run;
+})();
+
+
+/* ============================================================
+ * __aaltoGridFlow (v42) — homepage tile grid -> CSS flow (PILOT)
+ * Gated to ?aaltogrid=1 ONLY. Live is UNCHANGED for real users
+ * until this gate is widened (add innerWidth<640) after a
+ * Responsively pass. Converts the 6 horizontal carousel cards in
+ * the main artboard (rec913130404) into a single-column card
+ * stack. A stylesheet with !important defeats Tilda's continuous
+ * inline repositioning; reparenting the tiles out of the artboard's
+ * direct-child set takes them out of Tilda's layout control. When
+ * active it also tells the mobile crutches (normalizeCards /
+ * __aaltoCatTitle) to stand down via window.__aaltoGridFlowActive.
+ * ============================================================ */
+(function () {
+  function forced() { try { return /[?&]aaltogrid=1/.test(location.search); } catch (e) { return false; } }
+  if (!forced()) return;                       // PILOT: flag-only
+  window.__aaltoGridFlowActive = true;
+
+  var ANCHOR = '1742976412184', FOOTER = '1751550459538';
+  var CARDS = [
+    { bg:'1742976412158', title:'1742976412152', sub:'1742976412148', inner:null, ctaBtn:'1742976412156', arrow:'1743620838590', photo:true },
+    { bg:'1742976412203', title:'1742976412184', sub:'1742976412188', inner:null, ctaBtn:'1742976412200', arrow:null, photo:true },
+    { bg:'1742976412138', title:'176061955356893660', sub:'1742976412134', inner:null, ctaBtn:'1742976412132', arrow:'1743620281558', photo:true },
+    { bg:'1742976412181', title:'1742976412168', sub:'1742976412178', inner:'1742976412174', ctaBtn:'1742976412172', arrow:'1743620715575', photo:false },
+    { bg:'1742976412212', title:'1742976412099', sub:'1742976412105', inner:'1742976412095', ctaBtn:'1742976412103', arrow:'1743620352270', photo:false },
+    { bg:'1742976412208', title:'1742976412114', sub:'1742976412109', inner:'1742976412119', ctaBtn:'1742976412112', arrow:'1743621028349', photo:false }
+  ];
+  var CSS = [
+    '.aalto-grid-flow{display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;align-items:stretch!important;gap:22px!important;max-width:560px!important;margin:0 auto!important;padding:16px 16px 48px!important;position:relative!important;z-index:5!important;box-sizing:border-box!important;left:auto!important;top:auto!important;}',
+    '.aalto-grid-flow>.t396__elem{position:relative!important;left:auto!important;top:auto!important;right:auto!important;bottom:auto!important;inset:auto!important;transform:none!important;width:100%!important;max-width:100%!important;height:auto!important;zoom:1!important;margin:0!important;flex:0 0 auto!important;align-self:stretch!important;}',
+    '.aalto-grid-flow>.aalto-card{min-height:200px!important;display:flex!important;flex-direction:column!important;gap:12px!important;padding:24px!important;border-radius:16px!important;overflow:hidden!important;background-size:cover!important;background-position:center!important;}',
+    '.aalto-grid-flow .aalto-card>.t396__elem{position:relative!important;left:auto!important;top:auto!important;inset:auto!important;transform:none!important;width:100%!important;max-width:100%!important;height:auto!important;zoom:1!important;margin:0!important;white-space:normal!important;z-index:3!important;}',
+    '.aalto-grid-flow .aalto-card .aalto-cta-arrow{width:44px!important;min-width:44px!important;height:44px!important;border-radius:50%!important;align-self:flex-start!important;margin-top:auto!important;display:flex!important;align-items:center!important;justify-content:center!important;position:relative!important;}',
+    '.aalto-grid-flow .aalto-card .aalto-cta-text{width:100%!important;max-width:300px!important;min-height:46px!important;margin-top:auto!important;display:flex!important;align-items:center!important;justify-content:center!important;}',
+    '.aalto-grid-flow .aalto-card .aalto-inner-img{height:140px!important;min-height:140px!important;border-radius:12px!important;overflow:hidden!important;background-size:cover!important;background-repeat:no-repeat!important;background-position:center!important;margin:2px 0!important;}'
+  ].join('');
+
+  function q(ab, id) { return id ? ab.querySelector('[data-elem-id="' + id + '"]') : null; }
+  function injectCSS() { if (document.getElementById('aaltoGridFlowCSS')) return; var s = document.createElement('style'); s.id = 'aaltoGridFlowCSS'; s.textContent = CSS; document.head.appendChild(s); }
+  function imp(el, prop, val) { if (el) el.style.setProperty(prop, val, 'important'); }
+
+  function build() {
+    var anchor = document.querySelector('[data-elem-id="' + ANCHOR + '"]'); if (!anchor) return;
+    var ab = anchor.closest('.t396__artboard'); if (!ab) return;
+    if (anchor.getBoundingClientRect().height < 3 && !ab.querySelector('.aalto-grid-flow')) return; // not rendered yet
+    injectCSS();
+    var flow = ab.querySelector('.aalto-grid-flow');
+    if (!flow) { flow = document.createElement('div'); flow.className = 'aalto-grid-flow'; }
+    var keep = {}; keep[FOOTER] = 1;
+    CARDS.forEach(function (c) {
+      var card = q(ab, c.bg); if (!card) return; keep[c.bg] = 1; card.classList.add('aalto-card');
+      var cardAtom = card.querySelector(':scope > .tn-atom');
+      if (c.photo) {
+        var src = null, img = card.querySelector('img');
+        if (img) { src = img.currentSrc || img.src; imp(img, 'display', 'none'); }
+        if (!src && cardAtom) { var b = getComputedStyle(cardAtom).backgroundImage; if (b && b !== 'none') src = b.slice(5, -2).replace(/^["']|["']$/g, ''); }
+        if (src) imp(card, 'background-image', 'linear-gradient(rgba(3,34,54,.30),rgba(3,34,54,.60)), url("' + src + '")');
+        if (cardAtom) imp(cardAtom, 'display', 'none');
+      } else {
+        var col = cardAtom ? getComputedStyle(cardAtom).backgroundColor : '';
+        if (!col || col === 'rgba(0, 0, 0, 0)') col = 'rgb(228,246,255)';
+        imp(card, 'background-color', col);
+        if (cardAtom) imp(cardAtom, 'display', 'none');
+      }
+      var title = q(ab, c.title), sub = q(ab, c.sub), inner = q(ab, c.inner), btn = q(ab, c.ctaBtn), arrow = q(ab, c.arrow);
+      [title, sub].forEach(function (e) { if (e) { keep[e.getAttribute('data-elem-id')] = 1; var a = e.querySelector('.tn-atom'); if (a) imp(a, 'background', 'transparent'); } });
+      if (inner) { keep[c.inner] = 1; inner.classList.add('aalto-inner-img'); var at = inner.querySelector('.tn-atom'); var abg = at ? getComputedStyle(at).backgroundImage : 'none'; if (abg && abg !== 'none') imp(inner, 'background-image', abg); if (at) imp(at, 'display', 'none'); }
+      if (arrow) keep[c.arrow] = 1;
+      if (btn) {
+        keep[c.ctaBtn] = 1; var isText = (btn.textContent || '').trim().length > 0;
+        if (isText) { btn.classList.add('aalto-cta-text'); var a = btn.querySelector('a'); if (a) { imp(a, 'width', '100%'); imp(a, 'display', 'flex'); imp(a, 'align-items', 'center'); imp(a, 'justify-content', 'center'); } }
+        else {
+          btn.classList.add('aalto-cta-arrow');
+          if (arrow) { imp(arrow, 'position', 'absolute'); imp(arrow, 'left', '50%'); imp(arrow, 'top', '50%'); imp(arrow, 'inset', 'auto'); imp(arrow, 'transform', 'translate(-50%,-50%)'); imp(arrow, 'width', '20px'); imp(arrow, 'height', '20px'); imp(arrow, 'margin', '0'); imp(arrow, 'zoom', '1'); imp(arrow, 'display', 'block'); imp(arrow, 'z-index', '4'); btn.appendChild(arrow); }
+        }
+      }
+      [title, sub, inner, btn].forEach(function (e) { if (e) card.appendChild(e); });
+      flow.appendChild(card);
+    });
+    var footer = q(ab, FOOTER); if (footer) { imp(footer, 'text-align', 'center'); imp(footer, 'font-size', '12px'); imp(footer, 'margin-top', '24px'); flow.appendChild(footer); }
+    ab.appendChild(flow);
+    imp(ab, 'height', 'auto'); imp(ab, 'min-height', '0');
+    ab.querySelectorAll('.t396__elem').forEach(function (e) { var id = e.getAttribute('data-elem-id'); if (keep[id]) return; if (flow.contains(e)) return; var top = parseInt(e.style.top) || 0; if (top >= 380 && top <= 1000) imp(e, 'display', 'none'); });
+    var maxB = 0;
+    ab.querySelectorAll('.t396__elem').forEach(function (e) { if (flow.contains(e)) return; if (getComputedStyle(e).display === 'none') return; var top = parseInt(e.style.top) || 0; if (top < 380) { var h = e.getBoundingClientRect().height / (parseFloat(e.style.zoom) || 1); maxB = Math.max(maxB, top + h); } });
+    if (maxB > 0) imp(flow, 'margin-top', (Math.round(maxB) + 24) + 'px');
+    var t = ab.closest('.t396'); if (t) imp(t, 'height', 'auto');
+    var rr = ab.closest('.r'); if (rr) { imp(rr, 'height', 'auto'); imp(rr, 'min-height', '0'); }
+  }
+  function run() { try { build(); } catch (e) {} }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { [400, 900, 1600, 2600].forEach(function (d) { setTimeout(run, d); }); });
+  else [200, 700, 1500].forEach(function (d) { setTimeout(run, d); });
+  window.addEventListener('load', function () { setTimeout(run, 300); });
+  window.addEventListener('resize', function () { setTimeout(run, 300); });
+  var I = window.AaltoI18n; if (I && I.setLang && !I.__gridFlowHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); setTimeout(run, 150); return r; }; I.__gridFlowHook = 1; }
+  window.__aaltoGridFlow = run;
 })();
