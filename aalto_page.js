@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v37-adaptive-fixes';
+window.__aaltoVer = 'v38-adaptive-fixes2';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -989,9 +989,11 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     if (first.getBoundingClientRect().height < 5) return; // popup not rendered yet
     var z = zoomOf(first);
     var leftMargin = parseFloat(first.style.left) || 20;
+    var contentW = Math.round(window.innerWidth / z) - 2 * leftMargin;   // design px full width (so height measures at mobile width)
     var y = st(first);
     els.forEach(function (e) {
       e.style.left = Math.round(leftMargin) + 'px';   // force single column (was: bail if any left>60)
+      if (contentW > 80) e.style.width = contentW + 'px';                // force full width -> correct wrapped height (fixes category overlap)
       e.style.top = Math.round(y) + 'px';
       var h = e.getBoundingClientRect().height / z;
       y += h + (PP.gapAfter[e.getAttribute('data-elem-id')] || PP.defGap);
@@ -1662,9 +1664,9 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
                   '1742976412181','1742976412212','1742976412208'];
   function q(id) { return document.querySelector('[data-elem-id="' + id + '"]'); }
   function zoomOf(el) {
-    var ab = el.closest && el.closest('.t396__artboard');
-    var t = ab && ab.style.transform; var m = t && t.match(/scale\(([0-9.]+)\)/);
-    return m ? parseFloat(m[1]) : 1;
+    var z = 1, n = el;
+    while (n && n !== document.body) { var v = parseFloat(getComputedStyle(n).zoom); if (v && v !== 1) z *= v; n = n.parentElement; }
+    return z;
   }
   function fix() {
     var foot = q(FOOT); if (!foot) return;
@@ -1941,18 +1943,20 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
  * title font just enough to keep it on ONE line. Desktop = no change.
  * ============================================================ */
 (function () {
-  var ID = '1742976412184';
+  var IDS = ['1742976412152', '176061955356893660', '1742976412184', '1742976412168', '1742976412099', '1742976412114'];
   function fit() {
-    var el = document.querySelector('[data-elem-id="' + ID + '"]'); if (!el) return;
-    var atom = el.querySelector('.tn-atom') || el;
-    atom.style.removeProperty('font-size');           // reset to natural before measuring
-    var cs = getComputedStyle(atom);
-    var lh = parseFloat(cs.lineHeight) || (parseFloat(cs.fontSize) * 1.2);
-    var fs = parseFloat(cs.fontSize) || 24, guard = 0;
-    while (atom.getBoundingClientRect().height > lh * 1.4 && fs > 12 && guard < 40) {
-      fs -= 1; atom.style.setProperty('font-size', fs + 'px', 'important');
-      cs = getComputedStyle(atom); lh = parseFloat(cs.lineHeight) || fs * 1.2; guard++;
-    }
+    IDS.forEach(function (ID) {
+      var el = document.querySelector('[data-elem-id="' + ID + '"]'); if (!el) return;
+      var atom = el.querySelector('.tn-atom') || el;
+      atom.style.removeProperty('font-size');         // reset to natural before measuring
+      var cs = getComputedStyle(atom);
+      var lh = parseFloat(cs.lineHeight) || (parseFloat(cs.fontSize) * 1.2);
+      var fs = parseFloat(cs.fontSize) || 24, guard = 0;
+      while (atom.getBoundingClientRect().height > lh * 1.4 && fs > 12 && guard < 40) {
+        fs -= 1; atom.style.setProperty('font-size', fs + 'px', 'important');
+        cs = getComputedStyle(atom); lh = parseFloat(cs.lineHeight) || fs * 1.2; guard++;
+      }
+    });
   }
   function run() { try { fit(); } catch (e) {} }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(run, 600); });
