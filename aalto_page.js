@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v41b-products-popup-flow-img';
+window.__aaltoVer = 'v41c-products-popup-flow-img';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -2048,11 +2048,13 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
         if (atom) setAll(atom, ['min-height:48px', 'display:flex', 'align-items:center', 'justify-content:center', 'padding:12px 18px', 'box-sizing:border-box']);
         var la = e.querySelector('a'); if (la) setAll(la, ['width:100%', 'display:flex', 'align-items:center', 'justify-content:center']);
       }
-      if (id === IMG) {                                        // decorative image: centered, capped, natural aspect (no crop/overlap)
-        setAll(e, ['width:100%', 'max-width:220px', 'margin:4px auto 6px', 'display:block', 'height:auto']);
+      if (id === IMG) {                                        // vineyard photo -> full-width banner. Tilda shape paints bg-image on inner atom which collapses to 0 width in flow; paint it on the element itself (reliable width) and hide the atom
+        setAll(e, ['position:relative', 'width:100%', 'max-width:100%', 'height:180px', 'min-height:180px', 'margin:8px 0 12px', 'display:block', 'inset:auto', 'overflow:hidden', 'border-radius:14px']);
+        var abg = atom ? getComputedStyle(atom).backgroundImage : 'none';
         var im = e.querySelector('img');
-        if (im) setAll(im, ['position:relative', 'left:auto', 'top:auto', 'width:100%', 'max-width:100%', 'height:auto', 'max-height:210px', 'object-fit:contain', 'border-radius:14px', 'display:block']);
-        else if (atom) setAll(atom, ['position:relative', 'left:auto', 'top:auto', 'width:100%', 'min-height:170px', 'height:auto', 'background-size:contain', 'background-repeat:no-repeat', 'background-position:center', 'border-radius:14px']);
+        if (im && im.getAttribute('src')) { setAll(e, ['background-image:url("' + im.getAttribute('src') + '")', 'background-size:cover', 'background-repeat:no-repeat', 'background-position:center']); im.style.setProperty('display', 'none', 'important'); }
+        else if (abg && abg !== 'none') { setAll(e, ['background-image:' + abg, 'background-size:cover', 'background-repeat:no-repeat', 'background-position:center']); }
+        if (atom) atom.style.setProperty('display', 'none', 'important');
       }
       flow.appendChild(e);                                      // reorder into flow sequence
     });
