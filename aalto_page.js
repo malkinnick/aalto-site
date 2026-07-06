@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v38-adaptive-fixes2';
+window.__aaltoVer = 'v39-products-popup-flow';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -982,6 +982,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     bg: '1741793181242'
   };
   function restackProductsPopup() {
+    if (window.__aaltoProductsFlow) return;   // replaced by CSS-flow module (__aaltoProductsFlow) on mobile
     if (window.innerWidth >= 640) return;
     var els = PP.order.map(q).filter(Boolean);
     if (els.length < 8) return;
@@ -2004,4 +2005,61 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   var I = window.AaltoI18n;
   if (I && I.setLang && !I.__globeGuardHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); setTimeout(run, 120); return r; }; I.__globeGuardHook = 1; }
   window.__aaltoGlobeGuard = run;
+})();
+
+/* ============================================================
+ * Aalto — Products popup ("Our Products", rec897136426): on mobile,
+ * replace Tilda's absolute grid with true CSS flow (single column,
+ * auto-height) so category lists never overlap in any language.
+ * Reuses existing DOM (links/i18n preserved). Desktop keeps the grid.
+ * Force at any width for testing with ?aaltoflow=1.
+ * ============================================================ */
+(function () {
+  var REC = 'rec897136426', BTN = '1741793181469', BG = '1741793181242';
+  var ORDER = ['1741793181263', '1741793181280', '1741793181311', '1741793181318',
+               '1769781375124000001', '1769782896869000002', '1769783986425000007',
+               '1769783168730000004', '1769783834272000006', '1769783568645000005',
+               '1741793181469', '1741793181484'];
+  var HIDE = ['1741793181493', '1741793181359', '1741793181288', '1741793181388',
+              '176061570063160290', '1769983341818000001', '1741793181369', '1741793181376', '1741793181399', '1741793181408'];
+  function q(root, id) { return root.querySelector('[data-elem-id="' + id + '"]'); }
+  function forced() { try { return /[?&]aaltoflow=1/.test(location.search); } catch (e) { return false; } }
+  function setAll(el, rules) { rules.forEach(function (r) { var i = r.indexOf(':'); el.style.setProperty(r.slice(0, i), r.slice(i + 1), 'important'); }); }
+  function apply() {
+    if (window.innerWidth >= 640 && !forced()) return;          // mobile only; desktop keeps Tilda grid
+    var rec = document.getElementById(REC); if (!rec) return;
+    var ab = rec.querySelector('.t396__artboard'); if (!ab) return;
+    var title = q(ab, ORDER[0]); if (!title || title.getBoundingClientRect().height < 5) return; // popup not open yet
+    var bgEl = q(ab, BG), bgColor = '';
+    if (bgEl) { bgColor = getComputedStyle(bgEl).backgroundColor; if (bgColor === 'rgba(0, 0, 0, 0)') { var a = bgEl.querySelector('.tn-atom'); if (a) bgColor = getComputedStyle(a).backgroundColor; } }
+    var flow = ab.querySelector('.aalto-flow');
+    if (!flow) { flow = document.createElement('div'); flow.className = 'aalto-flow'; ab.appendChild(flow); }
+    setAll(ab, ['height:auto', 'min-height:0']); ab.style.position = 'relative';
+    if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)') ab.style.backgroundColor = bgColor;
+    flow.style.cssText = 'position:relative;z-index:2;padding:26px 20px 34px;display:flex;flex-direction:column;gap:16px;box-sizing:border-box;max-width:680px;margin:0 auto;';
+    ORDER.forEach(function (id) {
+      var e = q(ab, id); if (!e) return;
+      setAll(e, ['position:relative', 'left:auto', 'top:auto', 'right:auto', 'bottom:auto', 'transform:none', 'width:100%', 'max-width:100%', 'height:auto', 'margin:0', 'zoom:1', 'display:block']);
+      var atom = e.querySelector('.tn-atom');
+      if (atom) setAll(atom, ['position:relative', 'width:100%', 'max-width:100%', 'left:auto', 'top:auto', 'right:auto', 'white-space:normal', 'height:auto']);
+      if (id === BTN) {                                         // button collapses under height:auto -> restore clickable pill
+        setAll(e, ['min-height:48px', 'margin-top:8px']);
+        if (atom) setAll(atom, ['min-height:48px', 'display:flex', 'align-items:center', 'justify-content:center', 'padding:12px 18px', 'box-sizing:border-box']);
+        var la = e.querySelector('a'); if (la) setAll(la, ['width:100%', 'display:flex', 'align-items:center', 'justify-content:center']);
+      }
+      flow.appendChild(e);                                      // reorder into flow sequence
+    });
+    HIDE.forEach(function (id) { var e = q(ab, id); if (e) e.style.setProperty('display', 'none', 'important'); });
+    if (bgEl) bgEl.style.setProperty('display', 'none', 'important');   // panel replaced by artboard bg colour
+    var t396 = ab.closest('.t396'); if (t396) t396.style.setProperty('height', 'auto', 'important');
+    var rr = ab.closest('.r'); if (rr) { rr.style.setProperty('height', 'auto', 'important'); rr.style.setProperty('min-height', '0', 'important'); }
+    var wrap = ab.closest('.t-popup__container'); if (wrap) { wrap.style.height = 'auto'; if (bgColor) wrap.style.backgroundColor = bgColor; }
+    var pop = ab.closest('.t-popup'); if (pop) { pop.style.overflowY = 'auto'; pop.style.webkitOverflowScrolling = 'touch'; }
+  }
+  function run() { try { apply(); } catch (e) {} }
+  document.addEventListener('click', function (ev) { var a = ev.target.closest && ev.target.closest('a[href="#Our"],[data-tooltip-hook="#Our"]'); if (a) [250, 600, 1200, 2200].forEach(function (d) { setTimeout(run, d); }); }, true);
+  window.addEventListener('resize', function () { setTimeout(run, 250); });
+  var I = window.AaltoI18n;
+  if (I && I.setLang && !I.__prodFlowHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); setTimeout(run, 120); return r; }; I.__prodFlowHook = 1; }
+  window.__aaltoProductsFlow = run;
 })();
