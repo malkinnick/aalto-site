@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v54-text-switcher';
+window.__aaltoVer = 'v55-switcher-css-adaptive';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -753,15 +753,16 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     cssInjected = true;
     var st = document.createElement('style');
     st.textContent =
-      /* inline text language switcher (FI / SV / EN) pinned in the header */
-      '.aalto-lang-switcher,.aalto-lang-switcher--fixed{position:fixed!important;top:16px!important;right:16px!important;left:auto!important;bottom:auto!important;transform:none!important;z-index:9600;display:flex;align-items:center;gap:7px;line-height:1;color:#f5f5f5;visibility:visible!important;}' +
-      '.aalto-lang-link{color:#f5f5f5;text-decoration:none;opacity:.72;padding:5px 1px;letter-spacing:.5px;font:600 14px/1 \'Helvetica\',Arial,sans-serif;white-space:nowrap;transition:opacity .15s;}' +
+      /* inline text language switcher (FI / SV / EN) - fully responsive, pinned by PURE CSS (no JS positioning) */
+      '.aalto-lang-switcher,.aalto-lang-switcher--fixed{position:fixed!important;top:16px!important;right:clamp(14px,2vw,40px)!important;left:auto!important;bottom:auto!important;transform:none!important;z-index:9600;display:flex;align-items:center;gap:clamp(5px,0.6vw,8px);line-height:1;color:#f5f5f5;visibility:visible!important;}' +
+      '.aalto-lang-link{color:#f5f5f5;text-decoration:none;opacity:.72;padding:6px 2px;letter-spacing:.5px;font:600 clamp(13px,1.35vw,15px)/1 \'Helvetica\',Arial,sans-serif;white-space:nowrap;transition:opacity .15s;-webkit-tap-highlight-color:transparent;}' +
       '.aalto-lang-link:hover,.aalto-lang-link:focus-visible{opacity:1;}' +
       '.aalto-lang-link.is-active{opacity:1;font-weight:800;text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:2px;}' +
       '.aalto-lang-sep{opacity:.4;font:600 13px/1 \'Helvetica\',Arial,sans-serif;pointer-events:none;}' +
-      /* mobile: keep clear of the burger (top-right) */
-      '@media(max-width:959px){.aalto-lang-switcher,.aalto-lang-switcher--fixed{top:16px!important;right:74px!important;gap:6px;}.aalto-lang-link{font-size:15px;}}' +
-      '@media(max-width:480px){.aalto-lang-switcher,.aalto-lang-switcher--fixed{top:14px!important;right:64px!important;}}';
+      /* tablet + phone: burger appears top-right -> keep the switcher clear of it */
+      '@media(max-width:959px){.aalto-lang-switcher,.aalto-lang-switcher--fixed{top:16px!important;right:68px!important;gap:8px;}.aalto-lang-link{padding:8px 3px;}}' +
+      '@media(max-width:480px){.aalto-lang-switcher,.aalto-lang-switcher--fixed{top:13px!important;right:60px!important;}}' +
+      '@media(max-width:360px){.aalto-lang-switcher,.aalto-lang-switcher--fixed{right:54px!important;gap:6px;}.aalto-lang-link{font-size:13px;}}';
     document.head.appendChild(st);
   }
 
@@ -1790,6 +1791,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     return r.top + r.height / 2;
   }
   function place() {
+    return; /* v55: switcher position is 100% CSS (responsive media-queries + clamp) - no JS positioning, max robustness */
     var s = sw(); if (!s) return;
     var sr = s.getBoundingClientRect(); var pw = sr.width || 98, ph = sr.height || 44;
     // VERTICAL: align the switcher center with the LOGO center on every breakpoint.
@@ -2003,6 +2005,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
 (function () {
   var MENU_IDS = ['1741773916824', '1741773916815', '1741773916794', '1741773916806', '1741773916845', '1741773916834'];
   function guard() {
+    return; /* v55: not needed - switcher is pinned to the right edge by CSS, never overlaps the menu */
     if (window.innerWidth < 960) return;                 // mobile: CSS corner, no menu
     var s = document.querySelector('.aalto-lang-switcher'); if (!s) return;
     for (var pass = 0; pass < 10; pass++) {
