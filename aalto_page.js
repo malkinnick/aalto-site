@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v52-switcher-fixed';
+window.__aaltoVer = 'v53-switcher-logo-level';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -1789,30 +1789,40 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   var MENU_IDS = ['1741773916824','1741773916815','1741773916794','1741773916806','1741773916845','1741773916834'];
   function sw() { return document.querySelector('.aalto-lang-switcher'); }
   function q(id) { return document.querySelector('[data-elem-id="' + id + '"]'); }
+  var LOGO_ID = '1741773916636';
+  // vertical center of the logo (viewport coords) - null if not rendered / wrong breakpoint
+  function logoMid() {
+    var lg = q(LOGO_ID); if (!lg) return null;
+    var r = lg.getBoundingClientRect();
+    if (!r.height || !r.width || r.top > 200) return null;
+    return r.top + r.height / 2;
+  }
   function place() {
     var s = sw(); if (!s) return;
-    if (window.innerWidth < 960) { // mobile/tablet: FIXED near the burger - pinned to the viewport, always visible, never scrolls away
-      var mRight = window.innerWidth < 480 ? 66 : 74;
-      var mTop = window.innerWidth < 480 ? 14 : 16;
-      s.style.setProperty('position', 'fixed', 'important');
-      s.style.setProperty('top', mTop + 'px', 'important');
-      s.style.setProperty('right', mRight + 'px', 'important');
+    var sr = s.getBoundingClientRect(); var pw = sr.width || 98, ph = sr.height || 44;
+    // VERTICAL: align the switcher center with the LOGO center on every breakpoint.
+    // Keep the last value while scrolled (fixed element must not fly off on resize-while-scrolled).
+    var lm = logoMid();
+    var topPx = (lm != null && window.pageYOffset < 10) ? Math.round(lm - ph / 2) : parseInt(s.style.top, 10);
+    s.style.setProperty('position', 'fixed', 'important');   // FIXED: pinned to the viewport, always visible, does NOT scroll away
+    if (window.innerWidth < 960) { // mobile/tablet: same logo row, left of the burger
+      if (isNaN(topPx)) topPx = window.innerWidth < 480 ? 14 : 16;
+      s.style.setProperty('top', topPx + 'px', 'important');
+      s.style.setProperty('right', (window.innerWidth < 480 ? 66 : 74) + 'px', 'important');
       s.style.setProperty('left', 'auto', 'important');
       return;
     }
+    // desktop: horizontally after the menu, vertically on the logo row
     var items = MENU_IDS.map(q).filter(function (e) { if (!e) return false; var r = e.getBoundingClientRect(); return r.width > 0 && r.top < 120; });
     if (items.length < 3) return;
-    var menuRight = 0, cTop = 0, cBot = 0;
-    items.forEach(function (e) { var r = e.getBoundingClientRect(); if (r.right > menuRight) menuRight = r.right; cTop += r.top; cBot += r.bottom; });
-    var mid = (cTop + cBot) / (2 * items.length);
-    var sr = s.getBoundingClientRect(); var pw = sr.width || 98, ph = sr.height || 30;
+    var menuRight = 0;
+    items.forEach(function (e) { var r = e.getBoundingClientRect(); if (r.right > menuRight) menuRight = r.right; });
     var left = Math.round(menuRight + 24);
     var maxLeft = Math.round(window.innerWidth - pw - 12);
     if (left > maxLeft) left = maxLeft;
-    s.style.setProperty('position', 'fixed', 'important');   // FIXED: pinned to the viewport, always visible, does NOT scroll away
+    if (isNaN(topPx)) topPx = 15;
     s.style.setProperty('left', left + 'px', 'important');
     s.style.setProperty('right', 'auto', 'important');
-    var topPx = (window.pageYOffset < 10) ? Math.round(mid - ph / 2) : (parseInt(s.style.top, 10) || 15);
     s.style.setProperty('top', topPx + 'px', 'important');
   }
   function schedule() { [400, 1000, 2000, 3500].forEach(function (d) { setTimeout(place, d); }); }
