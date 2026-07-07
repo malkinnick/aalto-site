@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v47-b2b-popup-panel';
+window.__aaltoVer = 'v48-b2b-popup-panel-bg';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -2113,6 +2113,10 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     ab.style.setProperty('background-color', 'transparent', 'important');
     var cont = ab.closest('.t-popup__container'); if (cont) cont.style.setProperty('background-color', 'transparent', 'important');
     var flow = q(ab, BG); if (!flow) return;                    // use the native panel as the flow container -> keeps right ~3/4 on desktop, full-width on phones (uniform with other popups)
+    var pAtom = flow.querySelector(':scope > .tn-atom');        // panel bg lives on the atom, which collapses to 0 inside flex -> paint it on the panel itself
+    var pBg = pAtom ? getComputedStyle(pAtom).backgroundColor : '';
+    if (!pBg || pBg === 'rgba(0, 0, 0, 0)') pBg = 'rgb(228, 246, 255)';
+    flow.style.setProperty('background-color', pBg, 'important');
     flow.style.setProperty('display', 'flex', 'important');
     setAll(flow, ['flex-direction:column', 'gap:8px', 'height:auto', 'min-height:0', 'max-height:92vh', 'overflow-y:auto', 'box-sizing:border-box', 'padding:30px 40px 40px', '-webkit-overflow-scrolling:touch']);
     ORDER.forEach(function (id) {
