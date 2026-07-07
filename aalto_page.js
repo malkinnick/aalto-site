@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v49-ga-conversions';
+window.__aaltoVer = 'v50-hero-fi-sv-switcher';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -182,7 +182,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     'E-shop / B2C': 'Verkkokauppa',
     // Hero
     'Premium quality, "Low and No" and regular alcoholic beverages for the Finnish market':
-      'Premium-laatuisia "Low & No" -juomia ja perinteisiä alkoholijuomia Suomen markkinoille',
+      'Huolella valitut laadukkaat ja tyylikkäät alkoholittomat ja alkoholilliset juomat',
     'We offer full and high-quality acess to the Finnish market via all avaliable channels':
       'Tarjoamme pääsyn Suomen markkinoille kaikkien kanavien kautta',
     'We are an importer and distributor of premium no- and low-alcohol beverages, as well as selected alcoholic products in Finland':
@@ -314,7 +314,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     'E-shop / B2C': 'Webbutik / B2C',
     // Hero
     'Premium quality, "Low and No" and regular alcoholic beverages for the Finnish market':
-      'Premiumdrycker – "Low & No" och traditionella alkoholdrycker för den finländska marknaden',
+      'Premium drycker – "Low & No" och traditionella alkoholdrycker för den finländska marknaden',
     'We offer full and high-quality acess to the Finnish market via all avaliable channels':
       'Vi erbjuder högkvalitativ tillgång till den finländska marknaden via alla kanaler',
     'We are an importer and distributor of premium no- and low-alcohol beverages, as well as selected alcoholic products in Finland':
@@ -1791,7 +1791,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   function q(id) { return document.querySelector('[data-elem-id="' + id + '"]'); }
   function place() {
     var s = sw(); if (!s) return;
-    if (window.innerWidth < 960) { s.style.removeProperty('left'); s.style.removeProperty('right'); s.style.removeProperty('top'); return; } // mobile: CSS handles
+    if (window.innerWidth < 960) { s.style.removeProperty('position'); s.style.removeProperty('left'); s.style.removeProperty('right'); s.style.removeProperty('top'); return; } // mobile: CSS handles
     var items = MENU_IDS.map(q).filter(function (e) { if (!e) return false; var r = e.getBoundingClientRect(); return r.width > 0 && r.top < 120; });
     if (items.length < 3) return;
     var menuRight = 0, cTop = 0, cBot = 0;
@@ -1801,9 +1801,10 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     var left = Math.round(menuRight + 24);
     var maxLeft = Math.round(window.innerWidth - pw - 12);
     if (left > maxLeft) left = maxLeft;
-    s.style.setProperty('left', left + 'px', 'important');   // base CSS uses !important
+    s.style.setProperty('position', 'absolute', 'important');   // scroll WITH the header (was fixed) so it stays on the logo/menu row
+    s.style.setProperty('left', Math.round(left + window.pageXOffset) + 'px', 'important');
     s.style.setProperty('right', 'auto', 'important');
-    s.style.setProperty('top', Math.round(mid - ph / 2) + 'px', 'important');
+    s.style.setProperty('top', Math.round(mid + window.pageYOffset - ph / 2) + 'px', 'important');
   }
   function schedule() { [400, 1000, 2000, 3500].forEach(function (d) { setTimeout(place, d); }); }
   window.addEventListener('resize', function () { setTimeout(place, 120); });
@@ -2176,4 +2177,42 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     }
   }, true);
   window.__aaltoConversions = true;
+})();
+
+
+/* ============================================================
+ * Aalto - hero: second line under the FI tagline
+ * ("Luotettava kumppani Suomen markkinoilla"). FI only; EN/SV
+ * keep the single-line hero. Re-applied on language change.
+ * ============================================================ */
+(function () {
+  var HERO = '1741773916599';
+  var SUB = { fi: 'Luotettava kumppani Suomen markkinoilla', en: '', sv: '' };
+  function lang() { return (document.documentElement.lang || 'fi').slice(0, 2); }
+  function apply() {
+    var el = document.querySelector('[data-elem-id="' + HERO + '"]'); if (!el) return;
+    var atom = el.querySelector('.tn-atom') || el;
+    var txt = SUB[lang()] || '';
+    var sub = atom.querySelector('.aalto-hero-sub');
+    if (!txt) { if (sub) sub.style.display = 'none'; return; }
+    if (!sub) {
+      sub = document.createElement('span');
+      sub.className = 'aalto-hero-sub';
+      sub.style.cssText = 'display:block;margin-top:14px;font-size:18px;font-weight:400;line-height:1.35;opacity:.95;';
+      atom.appendChild(sub);
+    }
+    sub.style.display = 'block';
+    sub.textContent = txt;
+    el.style.height = 'auto';
+  }
+  function run() { try { apply(); } catch (e) {} }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(run, 500); });
+  else setTimeout(run, 500);
+  window.addEventListener('load', function () { setTimeout(run, 400); });
+  (function hook() {
+    var I = window.AaltoI18n;
+    if (I && I.setLang && !I.__heroSubHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); setTimeout(run, 60); return r; }; I.__heroSubHook = 1; }
+    else if (!(I && I.setLang)) setTimeout(hook, 200);
+  })();
+  window.__aaltoHeroSub = run;
 })();
