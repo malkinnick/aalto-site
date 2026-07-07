@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v48-b2b-popup-panel-bg';
+window.__aaltoVer = 'v49-ga-conversions';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -1567,7 +1567,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     if (!val(form, 'email') && !val(form, 'Email')) { return; }
     var btn = form.querySelector('.t-form__submit .t-submit, .t-form__submit');
     if (btn) { btn.setAttribute('disabled', 'disabled'); }
-    post(cfg, form).then(function () { ok(form); }).catch(function () { fail(form); });
+    post(cfg, form).then(function () { ok(form); try { if (window.gtag) window.gtag('event', 'generate_lead', { form_id: form.id, form_name: ({ form921022402: 'contact_main', form912651493: 'contact_popup', form912628486: 'suppliers' })[form.id] || form.id, language: (document.documentElement.lang || 'fi') }); } catch (e) {} }).catch(function () { fail(form); });
   }, true);
 
   // Arm forms once they exist / when popups open.
@@ -2149,4 +2149,31 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   var I = window.AaltoI18n;
   if (I && I.setLang && !I.__b2bFlowHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); setTimeout(run, 120); return r; }; I.__b2bFlowHook = 1; }
   window.__aaltoB2BFlow = run;
+})();
+
+
+/* ============================================================
+ * __aaltoConversions — GA4 conversion events (Consent Mode aware).
+ * Fires gtag events for the two key CTAs so they can be marked as
+ * key events (conversions) in GA4. gtag + Consent Mode handle the
+ * consent gating automatically (no data written before "Accept").
+ *   - catalogue_click : any link to aaltojuomat.fi/catalogue
+ *   - eshop_click     : any link to the B2C shop aaltojuomat.com
+ * (Form submissions fire 'generate_lead' from the forms module.)
+ * ============================================================ */
+(function () {
+  function ev(name, params) { try { if (window.gtag) window.gtag('event', name, params || {}); } catch (e) {} }
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest && e.target.closest('a[href]');
+    if (!a) return;
+    var href = a.getAttribute('href') || '';
+    if (!href || href.indexOf('mailto:') === 0 || href.indexOf('tel:') === 0) return;
+    var lang = document.documentElement.lang || 'fi';
+    if (/aaltojuomat\.fi\/catalogue/.test(href) || /(^|\/)catalogue(\/|$|\?|#)/.test(href)) {
+      ev('catalogue_click', { link_url: href, language: lang });
+    } else if (/^https?:\/\/(www\.)?aaltojuomat\.com/.test(href)) {
+      ev('eshop_click', { link_url: href, language: lang });
+    }
+  }, true);
+  window.__aaltoConversions = true;
 })();
