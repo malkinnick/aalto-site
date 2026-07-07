@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v56-switcher-bottom-align';
+window.__aaltoVer = 'v57-switcher-valign-allres';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -2229,4 +2229,48 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     else if (!(I && I.setLang)) setTimeout(hook, 200);
   })();
   window.__aaltoHeroSub = run;
+})();
+
+
+/* ============================================================
+ * Aalto - language switcher: align its BOTTOM edge with the logo
+ * bottom on EVERY breakpoint / resolution. Horizontal position stays
+ * pure CSS (responsive); this only fine-tunes the vertical `top` by
+ * measuring the REAL logo box, so alignment is correct at any screen
+ * size (Tilda places the logo slightly differently per breakpoint).
+ * Fixed element; recomputed on load / resize / font-load / lang change.
+ * Falls back to the CSS `top` if the logo is missing or the page is
+ * scrolled. Idempotent (converges, no drift).
+ * ============================================================ */
+(function () {
+  var LOGO_ID = '1741773916636';
+  function sw() { return document.querySelector('.aalto-lang-switcher'); }
+  function align() {
+    var s = sw(); if (!s) return;
+    if ((window.pageYOffset || 0) > 8) return;              // only while the header is at the top
+    var lg = document.querySelector('[data-elem-id="' + LOGO_ID + '"]');
+    if (!lg) return;                                        // keep the CSS fallback top
+    var lr = lg.getBoundingClientRect();
+    if (!lr.height || lr.top < -2 || lr.top > 240) return;  // logo not rendered / wrong state -> keep CSS
+    var link = s.querySelector('.aalto-lang-link') || s;
+    var lb = link.getBoundingClientRect().bottom;
+    if (!lb) return;
+    var delta = Math.round(lr.bottom - lb);                 // shift so switcher bottom == logo bottom
+    if (Math.abs(delta) < 1) return;
+    var curTop = parseFloat(getComputedStyle(s).top) || 0;
+    s.style.setProperty('top', Math.round(curTop + delta) + 'px', 'important');
+  }
+  function run() { try { align(); } catch (e) {} }
+  var t;
+  window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(run, 120); });
+  window.addEventListener('load', function () { [0, 300, 900].forEach(function (d) { setTimeout(run, d); }); });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(run, 400); });
+  else setTimeout(run, 400);
+  if (document.fonts && document.fonts.ready && document.fonts.ready.then) document.fonts.ready.then(function () { setTimeout(run, 60); });
+  (function hook() {
+    var I = window.AaltoI18n;
+    if (I && I.setLang && !I.__swVAlignHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); setTimeout(run, 80); return r; }; I.__swVAlignHook = 1; }
+    else if (!(I && I.setLang)) setTimeout(hook, 200);
+  })();
+  window.__aaltoSwVAlign = run;
 })();
