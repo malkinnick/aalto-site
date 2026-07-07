@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v45-seo-meta-desc';
+window.__aaltoVer = 'v46-b2b-popup-flow';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -1732,6 +1732,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   function h(el) { return el.getBoundingClientRect().height / zoomOf(el); }
 
   function restack() {
+    if (window.__aaltoB2BFlow) return;   // replaced by CSS-flow (__aaltoB2BFlow)
     if (window.innerWidth >= 640) return;                 // phones only
     var first = q(ROWS[0][0]); if (!first) return;
     if (first.getBoundingClientRect().height < 3) return;  // popup not rendered
@@ -2082,4 +2083,72 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   var I = window.AaltoI18n;
   if (I && I.setLang && !I.__prodFlowHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); setTimeout(run, 120); return r; }; I.__prodFlowHook = 1; }
   window.__aaltoProductsFlow = run;
+})();
+
+
+/* ============================================================
+ * __aaltoB2BFlow — B2B popup ("Yrityksille/För företag", rec912602860)
+ * -> CSS flow at ALL widths. The Tilda 2-column feature layout
+ * (label left / description far right) collided (label text ran into
+ * the description) on laptops and badly overlapped on phones. This
+ * reflows into one clean column: title, subtitle, image banner, then
+ * each feature as [bold heading + description], button, caption.
+ * Scoped strictly to #rec912602860 (data-elem-ids are shared with the
+ * Products/Contacts popups). Disables the old restack() for this rec.
+ * ============================================================ */
+(function () {
+  var REC = 'rec912602860', BTN = '1741793181469', BG = '1741793181242', IMG = '1741793181493';
+  var ORDER = ['1741793181263', '1741793181280', '1741793181493',
+    '1742927808630', '1742927808643', '1742927840215', '1742927840235',
+    '1742927841478', '1742927841506', '1742927842515', '1742927842531',
+    '1741793181311', '1741793181441', '1741793181469', '1741793181484'];
+  var HIDE = ['1742927808620', '1742927840199', '1742927841452', '1742927842500', '1741793181302'];
+  var LABELS = { '1742927808630': 1, '1742927840215': 1, '1742927841478': 1, '1742927842515': 1, '1741793181311': 1 };
+  function q(root, id) { return root.querySelector('[data-elem-id="' + id + '"]'); }
+  function setAll(el, rules) { rules.forEach(function (r) { var i = r.indexOf(':'); el.style.setProperty(r.slice(0, i), r.slice(i + 1), 'important'); }); }
+  function apply() {
+    var rec = document.getElementById(REC); if (!rec) return;
+    var ab = rec.querySelector('.t396__artboard'); if (!ab) return;
+    var title = q(ab, ORDER[0]); if (!title || title.getBoundingClientRect().height < 5) return; // popup not open yet
+    var bgEl = q(ab, BG), bgColor = '';
+    if (bgEl) { bgColor = getComputedStyle(bgEl).backgroundColor; if (bgColor === 'rgba(0, 0, 0, 0)') { var a = bgEl.querySelector('.tn-atom'); if (a) bgColor = getComputedStyle(a).backgroundColor; } }
+    var flow = ab.querySelector('.aalto-b2b-flow');
+    if (!flow) { flow = document.createElement('div'); flow.className = 'aalto-b2b-flow'; ab.appendChild(flow); }
+    setAll(ab, ['height:auto', 'min-height:0']); ab.style.position = 'relative';
+    if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)') ab.style.backgroundColor = bgColor;
+    flow.style.cssText = 'position:relative;z-index:2;padding:26px 20px 40px;display:flex;flex-direction:column;gap:8px;box-sizing:border-box;max-width:680px;margin:0 auto;';
+    ORDER.forEach(function (id) {
+      var e = q(ab, id); if (!e) return;
+      setAll(e, ['position:relative', 'left:auto', 'top:auto', 'right:auto', 'bottom:auto', 'transform:none', 'width:100%', 'max-width:100%', 'height:auto', 'margin:0', 'zoom:1', 'display:block']);
+      var atom = e.querySelector('.tn-atom');
+      if (atom) setAll(atom, ['position:relative', 'width:100%', 'max-width:100%', 'left:auto', 'top:auto', 'right:auto', 'white-space:normal', 'height:auto']);
+      if (id === IMG) {
+        setAll(e, ['position:relative', 'width:100%', 'max-width:100%', 'height:180px', 'min-height:180px', 'margin:6px 0 14px', 'display:block', 'inset:auto', 'overflow:hidden', 'border-radius:14px']);
+        var abg = atom ? getComputedStyle(atom).backgroundImage : 'none';
+        var im = e.querySelector('img');
+        if (im && im.getAttribute('src')) { setAll(e, ['background-image:url("' + im.getAttribute('src') + '")', 'background-size:cover', 'background-repeat:no-repeat', 'background-position:center']); im.style.setProperty('display', 'none', 'important'); }
+        else if (abg && abg !== 'none') { setAll(e, ['background-image:' + abg, 'background-size:cover', 'background-repeat:no-repeat', 'background-position:center']); }
+        if (atom) atom.style.setProperty('display', 'none', 'important');
+      } else if (id === BTN) {
+        setAll(e, ['min-height:48px', 'margin-top:16px']);
+        if (atom) setAll(atom, ['min-height:48px', 'display:flex', 'align-items:center', 'justify-content:center', 'padding:12px 18px', 'box-sizing:border-box']);
+        var la = e.querySelector('a'); if (la) setAll(la, ['width:100%', 'display:flex', 'align-items:center', 'justify-content:center']);
+      } else if (LABELS[id]) {
+        setAll(e, ['margin-top:16px', 'font-weight:700']);
+      }
+      flow.appendChild(e);
+    });
+    HIDE.forEach(function (id) { var e = q(ab, id); if (e) e.style.setProperty('display', 'none', 'important'); });
+    if (bgEl) bgEl.style.setProperty('display', 'none', 'important');
+    var t396 = ab.closest('.t396'); if (t396) t396.style.setProperty('height', 'auto', 'important');
+    var rr = ab.closest('.r'); if (rr) { rr.style.setProperty('height', 'auto', 'important'); rr.style.setProperty('min-height', '0', 'important'); }
+    var wrap = ab.closest('.t-popup__container'); if (wrap) { wrap.style.height = 'auto'; if (bgColor) wrap.style.backgroundColor = bgColor; }
+    var pop = ab.closest('.t-popup'); if (pop) { pop.style.overflowY = 'auto'; pop.style.webkitOverflowScrolling = 'touch'; }
+  }
+  function run() { try { apply(); } catch (e) {} }
+  document.addEventListener('click', function (ev) { var a = ev.target.closest && ev.target.closest('a[href="#Restaurants"],[data-tooltip-hook="#Restaurants"]'); if (a) [250, 600, 1200, 2200].forEach(function (d) { setTimeout(run, d); }); }, true);
+  window.addEventListener('resize', function () { setTimeout(run, 250); });
+  var I = window.AaltoI18n;
+  if (I && I.setLang && !I.__b2bFlowHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); setTimeout(run, 120); return r; }; I.__b2bFlowHook = 1; }
+  window.__aaltoB2BFlow = run;
 })();
