@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v53-switcher-logo-level';
+window.__aaltoVer = 'v54-text-switcher';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -605,23 +605,20 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
 
   var GLOBE_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18"></path><path d="M12 3c2.6 2.7 3.9 5.7 3.9 9s-1.3 6.3-3.9 9c-2.6-2.7-3.9-5.7-3.9-9s1.3-6.3 3.9-9z"></path></svg>';
   function swClose(container, restoreFocus) { container.classList.remove('open'); var t = container.querySelector('.aalto-lang-toggle'); if (t) { t.setAttribute('aria-expanded', 'false'); if (restoreFocus) { try { t.focus(); } catch (e) {} } } }
+  var SW_ORDER = ['fi', 'sv', 'en'];   // header display order: FI / SV / EN
   function swBuildInner(container) {
-    var toggle = document.createElement('button');
-    toggle.type = 'button'; toggle.className = 'aalto-lang-toggle';
-    toggle.setAttribute('aria-label', 'Language'); toggle.setAttribute('aria-expanded', 'false');
-    toggle.innerHTML = GLOBE_SVG + '<span class="aalto-lang-cur"></span>';
-    container.appendChild(toggle);
-    var menu = document.createElement('div'); menu.className = 'aalto-lang-menu';
-    LANGS.forEach(function (lang) {
-      var a = document.createElement('a'); a.href = '?lang=' + lang; a.textContent = lang.toUpperCase();
+    SW_ORDER.forEach(function (lang, i) {
+      if (i > 0) {
+        var sep = document.createElement('span');
+        sep.className = 'aalto-lang-sep'; sep.setAttribute('aria-hidden', 'true'); sep.textContent = '/';
+        container.appendChild(sep);
+      }
+      var a = document.createElement('a');
+      a.href = '?lang=' + lang; a.textContent = lang.toUpperCase();
       a.className = 'aalto-lang-link'; a.setAttribute('data-lang', lang);
-      a.addEventListener('click', function (ev) { ev.preventDefault(); setLang(lang); swClose(container, true); });
-      menu.appendChild(a);
+      a.addEventListener('click', function (ev) { ev.preventDefault(); setLang(lang); });
+      container.appendChild(a);
     });
-    container.appendChild(menu);
-    toggle.addEventListener('click', function (ev) { ev.stopPropagation(); var open = container.classList.toggle('open'); toggle.setAttribute('aria-expanded', open ? 'true' : 'false'); });
-    document.addEventListener('click', function (ev) { if (!container.contains(ev.target)) swClose(container); });
-    document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && container.classList.contains('open')) swClose(container, true); });
   }
   function buildSwitcher() {
     var els = SW_HIDE_IDS.map(function (id) {
@@ -756,20 +753,15 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     cssInjected = true;
     var st = document.createElement('style');
     st.textContent =
-      /* minimalist globe icon in header style + click-to-open dropdown */
-      '.aalto-lang-switcher,.aalto-lang-switcher--fixed{position:fixed!important;top:16px!important;right:16px!important;left:auto!important;bottom:auto!important;transform:none!important;z-index:9600;line-height:1;color:#f5f5f5;visibility:visible!important;}' +
-      '.aalto-lang-toggle{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;color:inherit;padding:0;min-width:44px;min-height:44px;font:600 14px/1 \'Helvetica\',Arial,sans-serif;}' +
-      '.aalto-lang-toggle:hover{opacity:.82;}' +
-      '.aalto-lang-toggle svg{width:20px;height:20px;display:block;}' +
-      '.aalto-lang-cur{letter-spacing:.4px;}' +
-      '.aalto-lang-menu{position:absolute;top:calc(100% + 8px);right:0;display:none;flex-direction:column;gap:2px;min-width:64px;background:rgba(10,20,28,.92);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:10px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.28);}' +
-      '.aalto-lang-switcher.open .aalto-lang-menu{display:flex;}' +
-      '.aalto-lang-menu .aalto-lang-link{display:block;margin:0 !important;flex:0 0 auto;color:#fff;text-decoration:none;opacity:.8;padding:8px 14px;border-radius:6px;font:600 14px/1 \'Helvetica\',Arial,sans-serif;white-space:nowrap;}' +
-      '.aalto-lang-menu .aalto-lang-link:hover{background:rgba(255,255,255,.12);opacity:1;}' +
-      '.aalto-lang-menu .aalto-lang-link.is-active{opacity:1;font-weight:800;background:rgba(255,255,255,.10);}' +
+      /* inline text language switcher (FI / SV / EN) pinned in the header */
+      '.aalto-lang-switcher,.aalto-lang-switcher--fixed{position:fixed!important;top:16px!important;right:16px!important;left:auto!important;bottom:auto!important;transform:none!important;z-index:9600;display:flex;align-items:center;gap:7px;line-height:1;color:#f5f5f5;visibility:visible!important;}' +
+      '.aalto-lang-link{color:#f5f5f5;text-decoration:none;opacity:.72;padding:5px 1px;letter-spacing:.5px;font:600 14px/1 \'Helvetica\',Arial,sans-serif;white-space:nowrap;transition:opacity .15s;}' +
+      '.aalto-lang-link:hover,.aalto-lang-link:focus-visible{opacity:1;}' +
+      '.aalto-lang-link.is-active{opacity:1;font-weight:800;text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:2px;}' +
+      '.aalto-lang-sep{opacity:.4;font:600 13px/1 \'Helvetica\',Arial,sans-serif;pointer-events:none;}' +
       /* mobile: keep clear of the burger (top-right) */
-      '@media(max-width:959px){.aalto-lang-switcher,.aalto-lang-switcher--fixed{top:16px!important;right:74px!important;}.aalto-lang-toggle svg{width:24px;height:24px;}}' +
-      '@media(max-width:480px){.aalto-lang-switcher,.aalto-lang-switcher--fixed{top:14px!important;right:66px!important;}}';
+      '@media(max-width:959px){.aalto-lang-switcher,.aalto-lang-switcher--fixed{top:16px!important;right:74px!important;gap:6px;}.aalto-lang-link{font-size:15px;}}' +
+      '@media(max-width:480px){.aalto-lang-switcher,.aalto-lang-switcher--fixed{top:14px!important;right:64px!important;}}';
     document.head.appendChild(st);
   }
 
@@ -1817,7 +1809,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     if (items.length < 3) return;
     var menuRight = 0;
     items.forEach(function (e) { var r = e.getBoundingClientRect(); if (r.right > menuRight) menuRight = r.right; });
-    var left = Math.round(menuRight + 24);
+    var left = Math.round(menuRight + 34);   // match the 34px rhythm between menu items
     var maxLeft = Math.round(window.innerWidth - pw - 12);
     if (left > maxLeft) left = maxLeft;
     if (isNaN(topPx)) topPx = 15;
