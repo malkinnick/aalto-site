@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v51-switcher-mobile-anchored';
+window.__aaltoVer = 'v52-switcher-fixed';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -1791,11 +1791,11 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   function q(id) { return document.querySelector('[data-elem-id="' + id + '"]'); }
   function place() {
     var s = sw(); if (!s) return;
-    if (window.innerWidth < 960) { // mobile/tablet: pin at the header row (left of burger) but anchored in the DOCUMENT (absolute) so it scrolls together with the logo/burger instead of floating fixed to the viewport
+    if (window.innerWidth < 960) { // mobile/tablet: FIXED near the burger - pinned to the viewport, always visible, never scrolls away
       var mRight = window.innerWidth < 480 ? 66 : 74;
       var mTop = window.innerWidth < 480 ? 14 : 16;
-      s.style.setProperty('position', 'absolute', 'important');
-      s.style.setProperty('top', Math.round(mTop + window.pageYOffset) + 'px', 'important');
+      s.style.setProperty('position', 'fixed', 'important');
+      s.style.setProperty('top', mTop + 'px', 'important');
       s.style.setProperty('right', mRight + 'px', 'important');
       s.style.setProperty('left', 'auto', 'important');
       return;
@@ -1809,10 +1809,11 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     var left = Math.round(menuRight + 24);
     var maxLeft = Math.round(window.innerWidth - pw - 12);
     if (left > maxLeft) left = maxLeft;
-    s.style.setProperty('position', 'absolute', 'important');   // scroll WITH the header (was fixed) so it stays on the logo/menu row
-    s.style.setProperty('left', Math.round(left + window.pageXOffset) + 'px', 'important');
+    s.style.setProperty('position', 'fixed', 'important');   // FIXED: pinned to the viewport, always visible, does NOT scroll away
+    s.style.setProperty('left', left + 'px', 'important');
     s.style.setProperty('right', 'auto', 'important');
-    s.style.setProperty('top', Math.round(mid + window.pageYOffset - ph / 2) + 'px', 'important');
+    var topPx = (window.pageYOffset < 10) ? Math.round(mid - ph / 2) : (parseInt(s.style.top, 10) || 15);
+    s.style.setProperty('top', topPx + 'px', 'important');
   }
   function schedule() { [400, 1000, 2000, 3500].forEach(function (d) { setTimeout(place, d); }); }
   window.addEventListener('resize', function () { setTimeout(place, 120); });
