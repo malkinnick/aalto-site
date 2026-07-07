@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v50-hero-fi-sv-switcher';
+window.__aaltoVer = 'v51-switcher-mobile-anchored';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -1791,7 +1791,15 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
   function q(id) { return document.querySelector('[data-elem-id="' + id + '"]'); }
   function place() {
     var s = sw(); if (!s) return;
-    if (window.innerWidth < 960) { s.style.removeProperty('position'); s.style.removeProperty('left'); s.style.removeProperty('right'); s.style.removeProperty('top'); return; } // mobile: CSS handles
+    if (window.innerWidth < 960) { // mobile/tablet: pin at the header row (left of burger) but anchored in the DOCUMENT (absolute) so it scrolls together with the logo/burger instead of floating fixed to the viewport
+      var mRight = window.innerWidth < 480 ? 66 : 74;
+      var mTop = window.innerWidth < 480 ? 14 : 16;
+      s.style.setProperty('position', 'absolute', 'important');
+      s.style.setProperty('top', Math.round(mTop + window.pageYOffset) + 'px', 'important');
+      s.style.setProperty('right', mRight + 'px', 'important');
+      s.style.setProperty('left', 'auto', 'important');
+      return;
+    }
     var items = MENU_IDS.map(q).filter(function (e) { if (!e) return false; var r = e.getBoundingClientRect(); return r.width > 0 && r.top < 120; });
     if (items.length < 3) return;
     var menuRight = 0, cTop = 0, cBot = 0;
