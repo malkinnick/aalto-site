@@ -1871,7 +1871,9 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
       meta('og:title', document.title);
       meta('og:description', desc);
       meta('og:type', 'website');
-      meta('og:url', 'https://aaltojuomat.fi/');
+      var _path = (location.pathname || '/').replace(/\/+$/, '');
+      var _self = 'https://aaltojuomat.fi' + (_path || '/');
+      meta('og:url', _self);
       meta('og:site_name', 'Aalto Beverages');
       meta('og:locale', locale);
       meta('twitter:card', 'summary', true);
@@ -1879,7 +1881,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
       meta('twitter:description', desc, true);
       var _cl = document.head.querySelector('link[rel="canonical"]');
       if (!_cl) { _cl = document.createElement('link'); _cl.setAttribute('rel', 'canonical'); document.head.appendChild(_cl); }
-      _cl.setAttribute('href', 'https://aaltojuomat.fi/');   // override Tilda's http canonical
+      _cl.setAttribute('href', _self);   // self-canonical over https (was hardcoded to root, 2026-11-05)
       meta('robots', 'index,follow', true);
     } catch (e) {}
   }
