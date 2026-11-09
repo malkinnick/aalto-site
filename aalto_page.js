@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v57-switcher-valign-allres';
+window.__aaltoVer = 'v58-seo-copy-c-a';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -2277,4 +2277,200 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     else if (!(I && I.setLang)) setTimeout(hook, 200);
   })();
   window.__aaltoSwVAlign = run;
+})();
+
+/* ============================================================
+ * Aalto - SEO copy on /main (variant C + A, approved by Nikita
+ * 2026-11-09). Visual design unchanged:
+ *  C) short intro under the hero tagline (rec913130404). Shown only
+ *     when it fits above the tile row; on short desktop viewports it
+ *     is hidden (display:none) - the full text lives in the popups.
+ *  A) B2B popup (rec912602860, CSS-flow by __aaltoB2BFlow): four
+ *     text sections inserted before the "Get in Touch" button.
+ *     Suppliers popup (rec912628486): producers paragraph under the
+ *     subtitle; the form row is pushed down only if needed.
+ * Texts per language (FI/EN/SV) live here, not in the i18n DICT.
+ * FI/SV pending Petteri's proofreading. Idempotent; re-applied on
+ * popup open / resize / language change.
+ * ============================================================ */
+(function () {
+  var CAT = 'https://aaltojuomat.fi/catalogue';
+  var T = {
+    en: {
+      intro: ['Aalto Beverages imports and distributes non-alcoholic, low-alcohol and selected alcoholic drinks for restaurants, bars and retailers across Finland. Brands include Lyre\'s, Vintense, Sober Spirits and Klokk & Co. Browse the ', { a: 'B2B catalogue' }, ' for wholesale prices.'],
+      b2b: [
+        ['For restaurants and bars', ['More guests are choosing not to drink, and they still want something good in the glass. We supply non-alcoholic and low-alcohol beers, wines, sparkling wines and spirit alternatives that work on a drinks list next to your regular range. Our team helps you put together a selection that fits your menu, from an alcohol-free pairing to a zero-proof cocktail list.']],
+        ['For retailers', ['We bring carefully chosen Low & No brands to Finnish stores and online shops. You get products with a clear story, consistent supply and support with listings and in-store material.']],
+        ['Brands we work with', ['Lyre\'s, Vintense, Bibo Runge, Sober Spirits, Seven Giants, Glen Dochus, Drop Bear, Klokk & Co, Kehrwieder, Molecola, Folkington\'s and more. See the full range and wholesale prices in our ', { a: 'B2B catalogue' }, '.']],
+        ['How ordering works', ['Browse the catalogue, send us your order or ask for a quote, and we deliver across Finland. Prices in the catalogue are wholesale prices excluding VAT.']]
+      ],
+      sup: ['Looking for a partner in Finland? We import, store and distribute drinks to restaurants, retail and online customers across the country, and we know how the Finnish market and its rules work.']
+    },
+    fi: {
+      intro: ['Aalto Beverages tuo maahan ja jakelee alkoholittomia, vähäalkoholisia ja valikoituja alkoholijuomia ravintoloille, baareille ja jälleenmyyjille koko Suomeen. Brändejämme ovat muun muassa Lyre\'s, Vintense, Sober Spirits ja Klokk & Co. Tukkuhinnat löydät ', { a: 'B2B-katalogistamme' }, '.'],
+      b2b: [
+        ['Ravintoloille ja baareille', ['Yhä useampi asiakas jättää alkoholin väliin, mutta haluaa silti lasiinsa jotain hyvää. Toimitamme alkoholittomia ja vähäalkoholisia oluita, viinejä, kuohuviinejä ja tislevaihtoehtoja, jotka sopivat juomalistalle muun valikoimasi rinnalle. Autamme kokoamaan valikoiman, joka sopii ruokalistaasi, alkoholittomasta juomapairingista nollaprosenttisiin cocktaileihin.']],
+        ['Jälleenmyyjille', ['Tuomme huolella valittuja Low & No -brändejä suomalaisiin kauppoihin ja verkkokauppoihin. Saat tuotteita, joilla on selkeä tarina ja tasainen saatavuus, sekä tukea listauksiin ja myymälämateriaaleihin.']],
+        ['Brändimme', ['Lyre\'s, Vintense, Bibo Runge, Sober Spirits, Seven Giants, Glen Dochus, Drop Bear, Klokk & Co, Kehrwieder, Molecola, Folkington\'s ja monta muuta. Koko valikoima ja tukkuhinnat löytyvät ', { a: 'B2B-katalogistamme' }, '.']],
+        ['Näin tilaat', ['Selaa katalogia, lähetä tilaus tai pyydä tarjous, niin toimitamme koko Suomeen. Katalogin hinnat ovat tukkuhintoja ilman arvonlisäveroa.']]
+      ],
+      sup: ['Etsitkö kumppania Suomesta? Tuomme maahan, varastoimme ja jakelemme juomia ravintoloille, vähittäiskauppaan ja verkkoasiakkaille koko maahan, ja tunnemme Suomen markkinat ja niiden säännöt.']
+    },
+    sv: {
+      intro: ['Aalto Beverages importerar och distribuerar alkoholfria, alkoholsvaga och utvalda alkoholhaltiga drycker till restauranger, barer och återförsäljare i hela Finland. Bland våra varumärken finns Lyre\'s, Vintense, Sober Spirits och Klokk & Co. Grossistpriserna hittar ni i vår ', { a: 'B2B-katalog' }, '.'],
+      b2b: [
+        ['För restauranger och barer', ['Allt fler gäster väljer bort alkoholen men vill ändå ha något gott i glaset. Vi levererar alkoholfria och alkoholsvaga öl, viner, mousserande viner och spritalternativ som passar på dryckeslistan bredvid ert ordinarie sortiment. Vi hjälper er att sätta ihop ett urval som passar er meny, från en alkoholfri dryckesmatchning till alkoholfria cocktails.']],
+        ['För återförsäljare', ['Vi för ut noggrant utvalda Low & No-varumärken till finska butiker och webbutiker. Ni får produkter med en tydlig historia och jämn tillgång, samt stöd med listningar och butiksmaterial.']],
+        ['Våra varumärken', ['Lyre\'s, Vintense, Bibo Runge, Sober Spirits, Seven Giants, Glen Dochus, Drop Bear, Klokk & Co, Kehrwieder, Molecola, Folkington\'s med flera. Hela sortimentet och grossistpriserna finns i vår ', { a: 'B2B-katalog' }, '.']],
+        ['Så beställer ni', ['Bläddra i katalogen, skicka er beställning eller be om en offert, så levererar vi i hela Finland. Priserna i katalogen är grossistpriser exklusive moms.']]
+      ],
+      sup: ['Söker ni en partner i Finland? Vi importerar, lagrar och distribuerar drycker till restauranger, detaljhandel och onlinekunder i hela landet, och vi känner den finska marknaden och dess regler.']
+    }
+  };
+  var HERO = '1741773916599';
+  var CARDS = ['1742976412158', '1742976412203', '1742976412138', '1742976412181', '1742976412212', '1742976412208'];
+  var B2B = 'rec912602860', B2B_PANEL = '1741793181242', B2B_BTN = '1741793181469', B2B_LABEL = '1742927808630', B2B_DESC = '1742927808643';
+  var SUP = 'rec912628486', SUP_SUB = '1742928351560', SUP_IMG = '1741793181493', SUP_BG = '1741793181242';
+  var SUP_PUSH = ['1741793181280', '1742928413695'];
+
+  function lang() { var l = (document.documentElement.lang || 'fi').slice(0, 2); return T[l] ? l : 'fi'; }
+  function zoomOf(el) { var z = parseFloat(getComputedStyle(el).zoom); return (z && isFinite(z)) ? z : 1; }
+  function q(root, id) { return root ? root.querySelector('[data-elem-id="' + id + '"]') : null; }
+  function fill(el, parts) {
+    while (el.firstChild) el.removeChild(el.firstChild);
+    parts.forEach(function (p) {
+      if (typeof p === 'string') { el.appendChild(document.createTextNode(p)); return; }
+      var a = document.createElement('a');
+      a.href = CAT; a.textContent = p.a;
+      a.style.cssText = 'color:inherit;text-decoration:underline;text-underline-offset:2px;';
+      el.appendChild(a);
+    });
+  }
+
+  /* ---- C: hero intro ---- */
+  function intro() {
+    var el = document.querySelector('[data-elem-id="' + HERO + '"]'); if (!el) return;
+    var atom = el.querySelector('.tn-atom'); if (!atom) return;
+    var p = el.querySelector('.aalto-hero-intro');
+    if (!p) {
+      p = document.createElement('p');
+      p.className = 'aalto-hero-intro';
+      el.appendChild(p);
+    }
+    var cs = getComputedStyle(atom), z = zoomOf(el);
+    p.style.cssText = 'display:table-caption;caption-side:bottom;text-align:left;margin:16px 0 0;padding:0;max-width:' + Math.round(720 / z) + 'px;font-family:' + cs.fontFamily +
+      ';font-weight:400;letter-spacing:0;white-space:normal;color:' + cs.color + ';opacity:.95;line-height:1.5;font-size:' + (16 / z).toFixed(2) + 'px;';
+    fill(p, T[lang()].intro);
+    el.style.height = 'auto';
+    // fit check against the tile row (screen px); shrink once, else hide
+    var top = Infinity;
+    CARDS.forEach(function (id) {
+      var c = document.querySelector('[data-elem-id="' + id + '"]'); if (!c) return;
+      var r = c.getBoundingClientRect(); if (r.height > 30 && r.top < top) top = r.top;
+    });
+    if (top === Infinity) return;
+    if (p.getBoundingClientRect().bottom + 16 > top) {
+      p.style.fontSize = (14 / z).toFixed(2) + 'px';
+      p.style.marginTop = Math.round(10 / z) + 'px';
+      if (p.getBoundingClientRect().bottom + 12 > top) p.style.display = 'none';
+    }
+  }
+
+  /* ---- A1: B2B popup sections (inside the CSS-flow panel) ---- */
+  function b2b() {
+    var rec = document.getElementById(B2B); if (!rec) return;
+    var panel = q(rec, B2B_PANEL), btn = q(rec, B2B_BTN);
+    if (!panel || !btn || btn.parentNode !== panel) return;            // flow not applied yet
+    if (getComputedStyle(panel).display !== 'flex') return;
+    var box = panel.querySelector(':scope > .aalto-b2b-seo');
+    if (!box) {
+      box = document.createElement('div');
+      box.className = 'aalto-b2b-seo';
+      box.style.cssText = 'display:block;margin:20px 0 4px;padding-top:20px;border-top:1px solid rgba(0,94,141,.25);';
+    }
+    var lab = q(rec, B2B_LABEL), desc = q(rec, B2B_DESC);
+    var la = lab && (lab.querySelector('.tn-atom') || lab), da = desc && (desc.querySelector('.tn-atom') || desc);
+    var lcs = la ? getComputedStyle(la) : null, dcs = da ? getComputedStyle(da) : null;
+    var key = lang();
+    if (box.getAttribute('data-lang') !== key) {
+      while (box.firstChild) box.removeChild(box.firstChild);
+      T[key].b2b.forEach(function (sec, i) {
+        var h = document.createElement('h3');
+        h.textContent = sec[0];
+        h.style.cssText = 'margin:' + (i ? '18px' : '0') + ' 0 6px;font-size:inherit;';
+        var p = document.createElement('p');
+        p.style.cssText = 'margin:0;';
+        fill(p, sec[1]);
+        box.appendChild(h); box.appendChild(p);
+      });
+      box.setAttribute('data-lang', key);
+    }
+    [].forEach.call(box.querySelectorAll('h3'), function (h) {
+      if (lcs) { h.style.fontFamily = lcs.fontFamily; h.style.color = lcs.color; h.style.textTransform = lcs.textTransform; h.style.letterSpacing = lcs.letterSpacing; h.style.fontSize = lcs.fontSize; }
+      h.style.fontWeight = lcs ? lcs.fontWeight : '500'; h.style.lineHeight = '1.3';
+    });
+    [].forEach.call(box.querySelectorAll('p'), function (p) {
+      if (dcs) { p.style.fontFamily = dcs.fontFamily; p.style.color = dcs.color; p.style.fontSize = dcs.fontSize; }
+      p.style.lineHeight = '1.55'; p.style.maxWidth = '820px';
+    });
+    if (box.nextSibling !== btn) panel.insertBefore(box, btn);
+  }
+
+  /* ---- A2: Suppliers popup producers paragraph ---- */
+  function sup() {
+    var rec = document.getElementById(SUP); if (!rec) return;
+    var sub = q(rec, SUP_SUB); if (!sub || sub.getBoundingClientRect().height < 5) return;   // popup closed
+    var atom = sub.querySelector('.tn-atom'); if (!atom) return;
+    var z = zoomOf(sub);
+    var p = sub.querySelector('.aalto-sup-seo');
+    if (!p) { p = document.createElement('p'); p.className = 'aalto-sup-seo'; sub.appendChild(p); }
+    var cs = getComputedStyle(atom);
+    var img = q(rec, SUP_IMG), sr = sub.getBoundingClientRect();
+    var maxW = 680;
+    if (img) { var ir = img.getBoundingClientRect(); if (ir.width > 20 && ir.left > sr.left + 200 && ir.top < sr.bottom + 200) maxW = Math.min(maxW, ir.left - sr.left - 40); }
+    p.style.cssText = 'display:table-caption;caption-side:bottom;text-align:left;margin:' + Math.round(18 / z) + 'px 0 0;padding:0;white-space:normal;font-family:' + cs.fontFamily +
+      ';font-weight:400;letter-spacing:0;color:' + cs.color + ';line-height:1.55;font-size:' + (16 / z).toFixed(2) + 'px;max-width:' + Math.round(maxW / z) + 'px;';
+    fill(p, T[lang()].sup);
+    sub.style.height = 'auto';
+    // push the "Interested in collaborating?" + form row down if the paragraph reaches it
+    var first = q(rec, SUP_PUSH[0]); if (!first) return;
+    var gap = first.getBoundingClientRect().top - (p.getBoundingClientRect().bottom + 28);
+    if (gap >= 0) return;
+    var d = -gap;
+    SUP_PUSH.forEach(function (id) { var e = q(rec, id); if (e) e.style.top = ((parseFloat(e.style.top) || 0) + d / zoomOf(e)) + 'px'; });
+    var bg = q(rec, SUP_BG);
+    if (bg) { var bh = bg.getBoundingClientRect().height + d; bg.style.height = (bh / zoomOf(bg)) + 'px'; var ba = bg.querySelector('.tn-atom'); if (ba) ba.style.height = '100%'; }
+    var ab = sub.closest('.t396__artboard');
+    if (ab) {
+      var need = Math.round(ab.getBoundingClientRect().height + d);
+      ab.style.setProperty('height', need + 'px', 'important'); ab.style.setProperty('max-height', 'none', 'important');
+      var t396 = ab.closest('.t396'); if (t396) t396.style.height = need + 'px';
+      var r = ab.closest('.r'); if (r) r.style.minHeight = need + 'px';
+      var pop = ab.closest('.t-popup'); if (pop) pop.style.overflowY = 'auto';
+    }
+  }
+
+  function run() { try { intro(); } catch (e) {} try { b2b(); } catch (e) {} try { sup(); } catch (e) {} }
+  function later(list) { list.forEach(function (d) { setTimeout(run, d); }); }
+  document.addEventListener('click', function (ev) {
+    var a = ev.target.closest && ev.target.closest('a[href="#Restaurants"],a[href="#Suppliers"]');
+    if (a) later([350, 800, 1400, 2500]);
+  }, true);
+  var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(run, 350); });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { later([700, 1600]); });
+  else later([700, 1600]);
+  window.addEventListener('load', function () { later([600, 1500]); });
+  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { setTimeout(run, 300); }); } catch (e) {}
+  // keep the B2B block before the button when __aaltoB2BFlow re-appends the panel children
+  try {
+    var mo = new MutationObserver(function () { var r = document.getElementById(B2B); var b = r && r.querySelector('.aalto-b2b-seo'); var btn = r && q(r, B2B_BTN); if (b && btn && b.nextSibling !== btn && btn.parentNode === b.parentNode) b.parentNode.insertBefore(b, btn); });
+    var start = function () { var r = document.getElementById(B2B); if (r) mo.observe(r, { childList: true, subtree: true }); else setTimeout(start, 500); };
+    start();
+  } catch (e) {}
+  (function hook() {
+    var I = window.AaltoI18n;
+    if (I && I.setLang && !I.__seoCopyHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); later([150, 600]); return r; }; I.__seoCopyHook = 1; }
+    else if (!(I && I.setLang)) setTimeout(hook, 200);
+  })();
+  window.__aaltoSeoCopy = run;
 })();
