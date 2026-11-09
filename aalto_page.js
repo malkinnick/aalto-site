@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v58-seo-copy-c-a';
+window.__aaltoVer = 'v59-seo-copy-lang';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -2472,5 +2472,7 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     if (I && I.setLang && !I.__seoCopyHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); later([150, 600]); return r; }; I.__seoCopyHook = 1; }
     else if (!(I && I.setLang)) setTimeout(hook, 200);
   })();
+  // the header switcher calls the internal setLang (not window.AaltoI18n), so also follow <html lang>
+  try { new MutationObserver(function () { later([60, 400]); }).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] }); } catch (e) {}
   window.__aaltoSeoCopy = run;
 })();
