@@ -1,4 +1,4 @@
-window.__aaltoVer = 'v59-seo-copy-lang';
+window.__aaltoVer = 'v60-lang-switch-hooks';
 /* tilda-blocks-page64821793.min.js (page block library: t1093 popups, t450 menu, t702) */
 window.isMobile=!1;if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){window.isMobile=!0}
 window.isiOS=!1;if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){window.isiOS=!0}
@@ -616,7 +616,8 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
       var a = document.createElement('a');
       a.href = '?lang=' + lang; a.textContent = lang.toUpperCase();
       a.className = 'aalto-lang-link'; a.setAttribute('data-lang', lang);
-      a.addEventListener('click', function (ev) { ev.preventDefault(); setLang(lang); });
+      // go through the public API so every module hooked on AaltoI18n.setLang re-runs (2026-11-09)
+      a.addEventListener('click', function (ev) { ev.preventDefault(); var api = window.AaltoI18n; if (api && api.setLang) api.setLang(lang); else setLang(lang); });
       container.appendChild(a);
     });
   }
@@ -2457,8 +2458,8 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     if (a) later([350, 800, 1400, 2500]);
   }, true);
   var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(run, 350); });
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { later([700, 1600]); });
-  else later([700, 1600]);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { later([0, 150, 700, 1600]); });
+  else later([0, 150, 700, 1600]);
   window.addEventListener('load', function () { later([600, 1500]); });
   try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { setTimeout(run, 300); }); } catch (e) {}
   // keep the B2B block before the button when __aaltoB2BFlow re-appends the panel children
@@ -2472,7 +2473,8 @@ event.eventName=eventName;if(el.dispatchEvent){el.dispatchEvent(event)}else if(e
     if (I && I.setLang && !I.__seoCopyHook) { var o = I.setLang; I.setLang = function () { var r = o.apply(this, arguments); later([150, 600]); return r; }; I.__seoCopyHook = 1; }
     else if (!(I && I.setLang)) setTimeout(hook, 200);
   })();
-  // the header switcher calls the internal setLang (not window.AaltoI18n), so also follow <html lang>
-  try { new MutationObserver(function () { later([60, 400]); }).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] }); } catch (e) {}
+  // also follow <html lang> directly (any caller of the internal setLang)
+  // same frame as the language change: hero sub-line first, then this copy -> no visible jump
+  try { new MutationObserver(function () { try { if (window.__aaltoHeroSub) window.__aaltoHeroSub(); } catch (e) {} run(); later([150, 600]); }).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] }); } catch (e) {}
   window.__aaltoSeoCopy = run;
 })();
